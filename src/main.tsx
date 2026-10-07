@@ -45,13 +45,14 @@ const sourceRows = [
 function App() {
   const [page, setPage] = useState<Page>('dashboard')
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [open, setOpen] = useState<Record<NavGroup, boolean>>({ assets: true, tenant: false, expenses: false, financials: false, reports: false })
   const [query, setQuery] = useState('')
   const [selectedAgreement, setSelectedAgreement] = useState('Building Agreement')
   const [modal, setModal] = useState<'source' | 'delete' | null>(null)
   const [editingSource, setEditingSource] = useState(sourceRows[1])
 
-  const navigate = (next: Page) => { setPage(next); setQuery('') }
+  const navigate = (next: Page) => { setPage(next); setQuery(''); setMobileOpen(false) }
   const toggle = (key: NavGroup) => setOpen(v => ({ ...v, [key]: !v[key] }))
 
   const title = useMemo(() => ({
@@ -65,11 +66,12 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar collapsed={collapsed} open={open} toggle={toggle} page={page} nav={nav} />
+      <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} open={open} toggle={toggle} page={page} nav={nav} />
+      {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} aria-hidden="true" />}
       <div className={`main-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
         <header className="topbar">
           <div className="topbar-left">
-            <button className="icon-button" onClick={() => setCollapsed(v => !v)} aria-label="Toggle sidebar"><Menu size={21} /></button>
+            <button className="icon-button" onClick={() => { if (window.matchMedia('(max-width:760px)').matches) setMobileOpen(v => !v); else setCollapsed(v => !v) }} aria-label="Toggle sidebar"><Menu size={21} /></button>
             <div className="breadcrumb"><span>CityOps</span><ChevronRight size={14}/><strong>{title}</strong></div>
           </div>
           <div className="top-actions">
@@ -108,7 +110,7 @@ function App() {
   )
 }
 
-function Sidebar({ collapsed, open, toggle, page, nav }: { collapsed: boolean; open: Record<NavGroup, boolean>; toggle: (k: NavGroup) => void; page: Page; nav: (p: Page) => () => void }) {
+function Sidebar({ collapsed, mobileOpen, open, toggle, page, nav }: { collapsed: boolean; mobileOpen: boolean; open: Record<NavGroup, boolean>; toggle: (k: NavGroup) => void; page: Page; nav: (p: Page) => () => void }) {
   const group = (key: NavGroup, label: string, icon: React.ReactNode, items: [string, Page][]) => (
     <div className="nav-group">
       <button className={`nav-row ${items.some(([,p]) => p === page) ? 'group-active' : ''}`} onClick={() => toggle(key)} title={collapsed ? label : undefined}>
@@ -118,7 +120,7 @@ function Sidebar({ collapsed, open, toggle, page, nav }: { collapsed: boolean; o
       {!collapsed && open[key] && <div className="subnav">{items.map(([label, p]) => <button key={p} onClick={nav(p)} className={`subnav-row ${page === p ? 'active' : ''}`}>{label}</button>)}</div>}
     </div>
   )
-  return <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+  return <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
     <div className="brand"><div className="brand-mark"><Building2 size={21}/></div>{!collapsed && <div><div className="brand-name">CITYOPS</div><div className="brand-sub">PROPERTY MANAGEMENT</div></div>}</div>
     {!collapsed && <div className="profile"><div className="profile-avatar">AK<span/></div><div><b>Athauallah Khan</b><small>Administrator</small></div></div>}
     <nav className="sidebar-nav">
