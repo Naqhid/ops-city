@@ -34,5 +34,5 @@ export const renewalData = {
     { building: 'South End', unit: 'F1', person: 'Jacob Andrews', date: '03/03/2026' },
     { building: 'South End', unit: 'F1', person: 'Jacob Andrews', date: '03/03/2027' },
   ],
-  leases: [],
+  leases: [] as { building: string; unit: string; person: string; date: string }[],
 }
