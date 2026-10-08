@@ -1,0 +1,18 @@
+import React, { useState } from 'react'
+import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Banknote, BarChart3, Bell, Building2, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, ClipboardList, CloudUpload, Download, Edit3, Eye, FileCheck2, FileText, Filter, Home, Landmark, LayoutDashboard, Menu, MoreHorizontal, Pencil, Plus, ReceiptText, RefreshCw, Search, Settings, Sparkles, Table2, Trash2, TrendingUp, Upload, UserRound, Users, Wallet, WalletCards, Wrench, X, Zap } from 'lucide-react'
+import { Page } from '../types'
+import { buildings, investors, tenants, rentRows, sourceRows, renewalData } from '../data'
+import { PageHeader, Toolbar, TableWrap, TableHead, Th, Pagination, Status } from '../shared'
+import { Field, FormCard } from './BuildingsPage'
+
+export function AvailablePage(){return <ReportTable title="Available Buildings" subtitle="A live view of units available across the portfolio." headers={['Name','Building Code','Total Floors','Total Units','Available Units','Unit Numbers']} rows={[['South End','BLD000001','2','4','1','G1'],['West End','BLD000002','0','0','0','—']]} />}
+
+export function BuildingCostPage(){return <div className="page-stack"><PageHeader title="Building Total Cost" subtitle="Generate cost summaries by category and building."/><div className="panel"><div className="report-filters"><Field label="Category" type="select" placeholder="— Please Select —"/><Field label="Building" type="select" placeholder="— Please Select —"/><button className="primary-btn"><RefreshCw size={16}/> Generate</button></div><div className="report-divider"/><div className="report-actions"><button className="secondary-btn"><Download size={16}/> Export</button></div><TableWrap><TableHead><Th>Name</Th><Th>Lease Amount</Th><Th>Rent Amount</Th><Th>Owner Name</Th></TableHead><tbody><tr><td colSpan={4} className="empty-row">Select filters and generate the report.</td></tr></tbody></TableWrap></div></div>}
+
+export function ReportTable({title,subtitle,headers,rows}:{title:string;subtitle:string;headers:string[];rows:string[][]}){return <div className="page-stack"><PageHeader title={title} subtitle={subtitle} action={<button className="secondary-btn"><Download size={16}/> Export</button>}/><div className="panel"><TableWrap><TableHead>{headers.map(h=><Th key={h}>{h}</Th>)}</TableHead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((x,j)=><td key={j}>{j===0?<b>{x}</b>:x}</td>)}</tr>)}</tbody></TableWrap></div></div>}
+
+export function OwnersPage(){return <FilterReport title="Owner's Buildings" filter="Owner" headers={['Name','Building Code','Total Floors','Total Units','Available Units','Unit Numbers']} rows={[['South End','BLD000001','2','4','0','—'],['West End','BLD000002','0','0','0','—']]} />}
+
+export function InvestmentsPage(){return <FilterReport title="Investment Buildings" filter="Investor" headers={['Building Name','Date','Investment Amount','Settlement','Investor Name']} rows={[['South End','11/12/2023','535','—','Suleman'],['South End','11/12/2023','7,878','—','Suleman']]} />}
+
+export function FilterReport({title,filter,headers,rows}:{title:string;filter:string;headers:string[];rows:string[][]}){return <div className="page-stack"><PageHeader title={title} subtitle="Filter and export portfolio ownership and investment information."/><div className="panel"><div className="single-filter"><Field label={filter} type="select" placeholder="Select"/><button className="secondary-btn"><Download size={16}/> Export</button></div><TableWrap><TableHead>{headers.map(h=><Th key={h}>{h}</Th>)}</TableHead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((x,j)=><td key={j}>{j===0?<b>{x}</b>:x}</td>)}</tr>)}</tbody></TableWrap></div></div>}
