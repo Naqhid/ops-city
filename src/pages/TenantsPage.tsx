@@ -72,7 +72,7 @@ function DataTable({ headers, children }: { headers: string[]; children: React.R
   </table></div>;
 }
 
-export default function TenantsAndRentalsPage() {
+export default function TenantsAndRentalsPage(_props: { query?: string; setQuery?: (v: string) => void } = {}) {
   const [buildings] = useState(initialBuildings);
   const [tenants, setTenants] = useState(initialTenants);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
