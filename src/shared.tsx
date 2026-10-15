@@ -7,3 +7,17 @@ export function TableHead({children}:{children:React.ReactNode}){return <thead><
 export function Th({children}:{children:React.ReactNode}){return <th>{children}<span>↕</span></th>}
 export function Pagination({total=2}:{total?:number}){return <div className="pagination"><span>Showing 1 to {total} of {total} entries</span><div><button>Previous</button><button className="current">1</button><button>Next</button></div></div>}
 export function Status({children='Active'}:{children?:React.ReactNode}){return <span className="status"><i/>{children}</span>}
+
+export function Field({label,value,type='text',required,textarea,placeholder,options}:{label:string;value?:string;type?:string;required?:boolean;textarea?:boolean;placeholder?:string;options?:string[]}){
+ return <label className="field"><span>{required&&<i>*</i>}{label}</span>{
+  textarea
+   ? <textarea defaultValue={value} placeholder={placeholder}/>
+   : type==='select'
+    ? <select defaultValue={value}>{placeholder&&<option value="">{placeholder}</option>}{(options||(value?[value]:[])).map(o=><option key={o}>{o}</option>)}</select>
+    : <input type={type} defaultValue={value} placeholder={placeholder}/>
+ }</label>
+}
+
+export function FormCard({title,icon,children}:{title:string;icon?:React.ReactNode;children:React.ReactNode}){
+ return <section className="form-card"><header>{icon&&<span className="form-card-icon">{icon}</span>}<h3>{title}</h3></header><div className="form-card-body">{children}</div></section>
+}

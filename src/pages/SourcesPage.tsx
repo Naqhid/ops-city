@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Banknote, BarChart3, Bell, Building2, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, ClipboardList, CloudUpload, Download, Edit3, Eye, FileCheck2, FileText, Filter, Home, Landmark, LayoutDashboard, Menu, MoreHorizontal, Pencil, Plus, ReceiptText, RefreshCw, Search, Settings, Sparkles, Table2, Trash2, TrendingUp, Upload, UserRound, Users, Wallet, WalletCards, Wrench, X, Zap } from 'lucide-react'
 import { Page } from '../types'
 import { buildings, investors, tenants, rentRows, sourceRows, renewalData } from '../data'
-import { PageHeader, Toolbar, TableWrap, TableHead, Th, Pagination, Status } from '../shared'
-import { Field, FormCard } from './BuildingsPage'
+import { PageHeader, Toolbar, TableWrap, TableHead, Th, Pagination, Status, Field, FormCard } from '../shared'
 
 export function SourcesPage({onEdit,onAdd}:{onEdit:(r:any)=>void;onAdd:()=>void}){return <div className="page-stack"><PageHeader title="Credit / Debit Sources" subtitle="Configure the transaction sources used throughout financial records." action={<button className="primary-btn" onClick={onAdd}><Plus size={17}/> Add source</button>}/><div className="panel"><Toolbar query="" setQuery={()=>{}}/><TableWrap><TableHead><Th>Item code</Th><Th>Description</Th><Th>Status</Th><Th>Date</Th><Th>Actions</Th></TableHead><tbody>{sourceRows.map(r=><tr key={r.code}><td><b>{r.code}</b></td><td>{r.description}</td><td><select className="inline-select" defaultValue={r.status}><option>Active</option><option>Inactive</option></select></td><td>{r.date}</td><td><button className="edit-btn" onClick={()=>onEdit(r)}><Pencil size={14}/> Edit</button></td></tr>)}</tbody></TableWrap><Pagination total={5}/></div></div>}
 

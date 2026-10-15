@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Banknote, BarChart3, Bell, Building2, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, ClipboardList, CloudUpload, Download, Edit3, Eye, FileCheck2, FileText, Filter, Home, Landmark, LayoutDashboard, Menu, MoreHorizontal, Pencil, Plus, ReceiptText, RefreshCw, Search, Settings, Sparkles, Table2, Trash2, TrendingUp, Upload, UserRound, Users, Wallet, WalletCards, Wrench, X, Zap } from 'lucide-react'
 import { Page } from '../types'
 import { buildings, investors, tenants, rentRows, sourceRows, renewalData } from '../data'
-import { PageHeader, Toolbar, TableWrap, TableHead, Th, Pagination, Status } from '../shared'
-import { Field, FormCard } from './BuildingsPage'
+import { PageHeader, Toolbar, TableWrap, TableHead, Th, Pagination, Status, Field, FormCard } from '../shared'
 
 export function AvailablePage(){return <ReportTable title="Available Buildings" subtitle="A live view of units available across the portfolio." headers={['Name','Building Code','Total Floors','Total Units','Available Units','Unit Numbers']} rows={[['South End','BLD000001','2','4','1','G1'],['West End','BLD000002','0','0','0','—']]} />}
 
