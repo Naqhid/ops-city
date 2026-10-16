@@ -59,7 +59,7 @@ function InvestorRelationDetail(){
 function Field({label,children,wide=false}:{label:string;children:React.ReactNode;wide?:boolean}){return <label className={`flex min-w-0 flex-col gap-2 text-xs font-semibold text-slate-700 ${wide?'col-span-full':''} [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-slate-200 [&_input]:px-3 [&_input]:py-2.5 [&_select]:w-full [&_select]:rounded-md [&_select]:border [&_select]:border-slate-200 [&_select]:px-3 [&_select]:py-2.5 [&_textarea]:w-full [&_textarea]:rounded-md [&_textarea]:border [&_textarea]:border-slate-200 [&_textarea]:p-3`}><span>{label}</span>{children}</label>}
 function toISO(v:string){if(!v)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;const p=v.split('/');return p.length===3?`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`:''}
 function fromISO(v:string){if(!v)return '';const [y,m,d]=v.split('-');return `${d}/${m}/${y}`}
-export function InvestorRelationPage(){
+export function InvestorRelationPage(_props: { query?: string; setQuery?: (v: string) => void } = {}){
  const [selectedBuilding,setSelectedBuilding]=useState<{id:string;name:string;type:string;category:string;status:string;electricity:string;water:string}|null>(null)
  const [buildingSearch,setBuildingSearch]=useState('')
  const buildings=[
