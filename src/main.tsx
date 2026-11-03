@@ -1,27 +1,31 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Bell, Building2, ChevronDown, ChevronRight, LayoutDashboard, Menu, Settings, Users, ReceiptText, WalletCards, BarChart3, Zap, LogOut, LockKeyhole } from 'lucide-react'
 import './styles.css'
 import { Page, NavGroup, Investor } from './types'
-import { Dashboard } from './pages/Dashboard'
-import { InvestorsPage } from './pages/InvestorsPage'
-import { InvestorForm } from './pages/InvestorForm'
-import { AgreementsPage } from './pages/AgreementsPage'
-import { AgreementEditor } from './pages/AgreementEditor'
-import { BuildingsPage } from './pages/BuildingsPage'
-import { BuildingForm } from './pages/BuildingForm'
-import { InvestorRelationPage } from './pages/InvestorRelationPage'
-import TenantsPage from './pages/TenantsPage'
-import { BuildingRentsPage } from './pages/BuildingRentsPage'
-import { BuildingExpensesPage } from './pages/BuildingExpensesPage'
-import { SourcesPage, SourceModal, ConfirmModal } from './pages/SourcesPage'
-import BankDetailsPage from './pages/BankDetailsPage'
-import FinancialPage from './pages/FinancialPage'
-import { AvailablePage } from './pages/AvailableBuildingsPage'
-import { BuildingCostPage } from './pages/BuildingCostPage'
-import { OwnersPage } from './pages/OwnersPage'
-import { InvestmentsPage } from './pages/InvestmentsPage'
+import { PageLoader } from './shared'
 import { apiRequest, listResource } from './lib/api'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const InvestorsPage = lazy(() => import('./pages/InvestorsPage'))
+const InvestorForm = lazy(() => import('./pages/InvestorForm'))
+const AgreementsPage = lazy(() => import('./pages/AgreementsPage'))
+const AgreementEditor = lazy(() => import('./pages/AgreementEditor'))
+const BuildingsPage = lazy(() => import('./pages/BuildingsPage'))
+const BuildingForm = lazy(() => import('./pages/BuildingForm'))
+const InvestorRelationPage = lazy(() => import('./pages/InvestorRelationPage'))
+const TenantsPage = lazy(() => import('./pages/TenantsPage'))
+const BuildingRentsPage = lazy(() => import('./pages/BuildingRentsPage'))
+const BuildingExpensesPage = lazy(() => import('./pages/BuildingExpensesPage'))
+const SourcesPage = lazy(() => import('./pages/SourcesPage').then(m => ({ default: m.SourcesPage })))
+const SourceModal = lazy(() => import('./pages/SourcesPage').then(m => ({ default: m.SourceModal })))
+const ConfirmModal = lazy(() => import('./pages/SourcesPage').then(m => ({ default: m.ConfirmModal })))
+const BankDetailsPage = lazy(() => import('./pages/BankDetailsPage'))
+const FinancialPage = lazy(() => import('./pages/FinancialPage'))
+const AvailablePage = lazy(() => import('./pages/AvailableBuildingsPage'))
+const BuildingCostPage = lazy(() => import('./pages/BuildingCostPage'))
+const OwnersPage = lazy(() => import('./pages/OwnersPage'))
+const InvestmentsPage = lazy(() => import('./pages/InvestmentsPage'))
 
 const BASE='/ops-city'
 const routeMap:Record<Page,string>={dashboard:'/',investors:'/investors','investor-form':'/investors/new',agreements:'/agreements','agreement-editor':'/agreements/editor',buildings:'/buildings','building-form':'/buildings/new','investor-relation':'/investor-relation',tenants:'/tenants','building-rents':'/building-rents','building-expenses':'/building-expenses',sources:'/sources',banks:'/banks',financial:'/financial',available:'/reports/available-buildings','building-cost':'/reports/building-cost',owners:'/reports/owners',investments:'/reports/investments'}
@@ -64,8 +68,10 @@ function App({currentUser,onLogout}:{currentUser:AuthUser|null;onLogout:()=>void
  const nav=(p:Page)=>()=>navigate(p); const openInvestorForm=(id?:string)=>{const path=id?`${BASE}/investors/edit/${encodeURIComponent(id)}`:`${BASE}/investors/new`; if(window.location.pathname!==path) window.history.pushState({page:'investor-form',id},'',path); setSelectedInvestorId(id||''); setPage('investor-form'); setQuery(''); setMobileOpen(false)}; const toggle=(key:NavGroup)=>setOpen(v=>({...v,[key]:!v[key]}))
  const title=useMemo(()=>({dashboard:'Dashboard',investors:'Investors & Owners','investor-form':selectedInvestorId?'Edit Investor / Owner':'Create Investor / Owner',agreements:'Contract Agreements','agreement-editor':'Agreement Template',buildings:'Manage Buildings','building-form':'Building Details','investor-relation':'Investor Relation',tenants:'Tenants and Rentals','building-rents':'Building Rents','building-expenses':'Building Expense',sources:'Credit / Debit Sources',banks:'Bank Details',financial:'Financial',available:'Available Buildings','building-cost':'Building Total Cost',owners:"Owner's Buildings",investments:"Investor's Investment"} as Record<Page,string>)[page],[page])
  return <div className="app-shell"><Sidebar collapsed={collapsed} mobileOpen={mobileOpen} open={open} toggle={toggle} page={page} nav={nav}/>{mobileOpen&&<div className="sidebar-backdrop" onClick={()=>setMobileOpen(false)}/>}<div className={`main-shell ${collapsed?'sidebar-collapsed':''}`}><header className="topbar"><div className="topbar-left"><button className="icon-button" onClick={()=>{if(window.matchMedia('(max-width:760px)').matches)setMobileOpen(v=>!v);else setCollapsed(v=>!v)}}><Menu size={21}/></button><div className="breadcrumb"><span>CityOps</span><ChevronRight size={14}/><strong>{title}</strong></div></div><div className="top-actions"><button className="icon-button notification"><Bell size={18}/><span/></button><button className="icon-button"><Settings size={18}/></button><div className="user-chip"><div className="avatar">{(currentUser?.name||currentUser?.username||'U').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div><div className="user-chip-text"><b>{currentUser?.name||currentUser?.username||'User'}</b><small>{currentUser?.role||'User'}</small></div><button className="logout-button" onClick={onLogout} title="Sign out" aria-label="Sign out"><LogOut size={16}/><span>Logout</span></button></div></div></header><main className="content">
+ <Suspense fallback={<PageLoader/>}>
  {page==='dashboard'&&<Dashboard onNavigate={navigate}/>} {page==='investors'&&<InvestorsPage query={query} setQuery={setQuery} rows={investorRows} onCreate={()=>openInvestorForm()} onEdit={openInvestorForm}/>} {page==='investor-form'&&<InvestorForm value={investorRows.find(r=>r.id===selectedInvestorId)} onBack={nav('investors')} onSave={r=>{setInvestorRows(prev=>{const exists=prev.some(x=>x.id===r.id); return exists?prev.map(x=>x.id===r.id?r:x):[...prev,r]}); navigate('investors')}}/>} {page==='agreements'&&<AgreementsPage onDraft={name=>{setSelectedAgreement(name);navigate('agreement-editor')}}/>} {page==='agreement-editor'&&<AgreementEditor name={selectedAgreement} onBack={nav('agreements')}/>} {page==='buildings'&&<BuildingsPage query={query} setQuery={setQuery} onCreate={()=>navigate('building-form')} onEdit={()=>navigate('building-form')}/>} {page==='building-form'&&<BuildingForm onBack={nav('buildings')}/>} {page==='investor-relation'&&<InvestorRelationPage query={query} setQuery={setQuery}/>} {page==='tenants'&&<TenantsPage query={query} setQuery={setQuery}/>} {page==='building-rents'&&<BuildingRentsPage query={query} setQuery={setQuery}/>} {page==='building-expenses'&&<BuildingExpensesPage query={query} setQuery={setQuery}/>} {page==='sources'&&<SourcesPage onEdit={r=>{setEditingSource(r);setModal('source')}} onAdd={()=>{setEditingSource({code:'NEW',description:'',status:'Active',date:'05-10-2026'});setModal('source')}}/>} {page==='banks'&&<BankDetailsPage/>} {page==='financial'&&<FinancialPage/>} {page==='available'&&<AvailablePage/>} {page==='building-cost'&&<BuildingCostPage/>} {page==='owners'&&<OwnersPage/>} {page==='investments'&&<InvestmentsPage/>}
- </main><footer>© 2026 CityOps · Property Management Suite</footer></div>{modal==='source'&&<SourceModal value={editingSource} onClose={()=>setModal(null)} onSave={()=>setModal(null)}/>} {modal==='delete'&&<ConfirmModal onClose={()=>setModal(null)}/>}<button className="support-fab"><Zap size={17}/></button></div>
+ </Suspense>
+ </main><footer>© 2026 CityOps · Property Management Suite</footer></div>{modal==='source'&&<Suspense fallback={null}><SourceModal value={editingSource} onClose={()=>setModal(null)} onSave={()=>setModal(null)}/></Suspense>} {modal==='delete'&&<Suspense fallback={null}><ConfirmModal onClose={()=>setModal(null)}/></Suspense>}<button className="support-fab"><Zap size={17}/></button></div>
 }
 
 function Sidebar({collapsed,mobileOpen,open,toggle,page,nav}:{collapsed:boolean;mobileOpen:boolean;open:Record<NavGroup,boolean>;toggle:(k:NavGroup)=>void;page:Page;nav:(p:Page)=>()=>void}){const group=(key:NavGroup,label:string,icon:React.ReactNode,items:[string,Page][])=> <div className="nav-group"><button className={`nav-row ${items.some(([,p])=>p===page)?'group-active':''}`} onClick={()=>toggle(key)}><span className="nav-main"><span className="nav-icon">{icon}</span>{!collapsed&&<span>{label}</span>}</span>{!collapsed&&(open[key]?<ChevronDown size={15}/>:<ChevronRight size={15}/>)}</button>{!collapsed&&open[key]&&<div className="subnav">{items.map(([label,p])=><button key={p} onClick={nav(p)} className={`subnav-row ${page===p?'active':''}`}>{label}</button>)}</div>}</div>;return <aside className={`sidebar ${collapsed?'collapsed':''} ${mobileOpen?'mobile-open':''}`}><div className="brand"><div className="brand-mark"><Building2 size={21}/></div>{!collapsed&&<div><div className="brand-name">CITYOPS</div><div className="brand-sub">PROPERTY MANAGEMENT</div></div>}</div>{!collapsed&&<div className="profile"><div className="profile-avatar">AK<span/></div><div><b>Athauallah Khan</b><small>Administrator</small></div></div>}<nav className="sidebar-nav"><button className={`nav-row ${page==='dashboard'?'active':''}`} onClick={nav('dashboard')}><span className="nav-main"><span className="nav-icon"><LayoutDashboard size={18}/></span>{!collapsed&&<span>Dashboard</span>}</span>{!collapsed&&<ChevronRight size={15}/>}</button>{group('assets','Assets',<Building2 size={18}/>,[['Investors & Owners','investors'],['Contract Agreements','agreements'],['Manage Building','buildings'],['Investor Relation','investor-relation']])}{group('tenant','Tenant Maintenance',<Users size={18}/>,[['Tenants & Rentals','tenants']])}{group('expenses','Expenses',<ReceiptText size={18}/>,[['Building Rents','building-rents'],['Building Expense','building-expenses']])}{group('financials','Financials',<WalletCards size={18}/>,[['Credit/Debit Sources','sources'],['Bank Details','banks'],['Financial','financial']])}{group('reports','Reports',<BarChart3 size={18}/>,[['Available Building','available'],['Building Total Cost','building-cost'],["Owner's Building",'owners'],["Investor's Investment",'investments']])}</nav>{!collapsed}</aside>}

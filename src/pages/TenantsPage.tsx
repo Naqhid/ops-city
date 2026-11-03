@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { listResource, createResource, updateResource } from "../lib/api";
 import { Eye, Pencil, Trash2 } from "lucide-react";
+import { DataTable } from "../shared";
 
 type Building = {
   id: string; name: string; type: string; category: string; categoryName: string;
@@ -65,12 +66,6 @@ function IconButton({ children, onClick, tone = "success", title }: { children: 
     danger: "bg-rose-500 text-white hover:bg-rose-600",
   };
   return <button type="button" title={title} onClick={onClick} className={`inline-flex h-8 w-8 items-center justify-center rounded-md text-sm shadow-sm transition ${tones[tone]}`}>{children}</button>;
-}
-function DataTable({ headers, children }: { headers: string[]; children: React.ReactNode }) {
-  return <div className="overflow-x-auto rounded-xl border border-slate-200"><table className="w-full min-w-[760px] border-collapse text-left text-sm">
-    <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600"><tr>{headers.map(h => <th key={h} className="whitespace-nowrap px-4 py-3 font-semibold">{h}</th>)}</tr></thead>
-    <tbody className="divide-y divide-slate-100">{children}</tbody>
-  </table></div>;
 }
 
 export default function TenantsAndRentalsPage(_props: { query?: string; setQuery?: (v: string) => void } = {}) {
@@ -171,21 +166,13 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
           <div className="flex gap-3"><div className="rounded-xl border border-slate-200 bg-white px-4 py-3"><div className="text-xs text-slate-500">Buildings</div><div className="text-xl font-bold">{buildings.length}</div></div><div className="rounded-xl border border-slate-200 bg-white px-4 py-3"><div className="text-xs text-slate-500">Tenants</div><div className="text-xl font-bold">{tenants.length}</div></div></div>
         </div>
         <div className={cardClass}>
-          <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold text-slate-800">Buildings</h2><p className="mt-1 text-xs text-slate-500">Select a building code to open its tenant list.</p></div><input className={`${inputClass} sm:max-w-xs`} placeholder="Search buildings..." value={buildingSearch} onChange={e => setBuildingSearch(e.target.value)} /></div>
-          <DataTable headers={["Building", "Building Name", "Building Type", "Category", "Category Name", "Address", "Latitude", "Longitude", "Status", "Electricity Number", "Water Number"]}>
-            {filteredBuildings.map(b => <tr key={b.id} className="hover:bg-sky-50/60">
-              <td className="px-4 py-4"><button className="font-semibold text-sky-700 underline-offset-4 hover:underline" onClick={() => { setSelectedBuilding(b); setTenantSearch(""); }}>{b.id}</button></td>
-              <td className="whitespace-nowrap px-4 py-4 font-medium">{b.name}</td><td className="px-4 py-4">{b.type}</td><td className="px-4 py-4">{b.category}</td><td className="px-4 py-4">{b.categoryName || "—"}</td><td className="px-4 py-4">{b.address || "—"}</td><td className="px-4 py-4">{b.latitude || "—"}</td><td className="px-4 py-4">{b.longitude || "—"}</td><td className="px-4 py-4"><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{b.status}</span></td><td className="px-4 py-4">{b.electricity || "—"}</td><td className="px-4 py-4">{b.water || "—"}</td>
-            </tr>)}
-          </DataTable>
-          <div className="flex items-center justify-between p-5 text-xs text-slate-500"><span>Showing {filteredBuildings.length} of {buildings.length} buildings</span><span>Click a building code to continue →</span></div>
+          <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold text-slate-800">Buildings</h2><p className="mt-1 text-xs text-slate-500">Select a building code to open its tenant list.</p></div></div>
+          <DataTable data={filteredBuildings} columns={[{key:'id',label:'Building',render:(val,row)=>(<button className="font-semibold text-sky-700 underline-offset-4 hover:underline" onClick={()=>{setSelectedBuilding(row);setTenantSearch("")}}>{val}</button>)},{key:'name',label:'Building Name'},{key:'type',label:'Building Type'},{key:'category',label:'Category'},{key:'categoryName',label:'Category Name',render:(val)=>val||'—'},{key:'address',label:'Address',render:(val)=>val||'—'},{key:'latitude',label:'Latitude',render:(val)=>val||'—'},{key:'longitude',label:'Longitude',render:(val)=>val||'—'},{key:'status',label:'Status',render:(val)=>(<span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{val}</span>)},{key:'electricity',label:'Electricity Number',render:(val)=>val||'—'},{key:'water',label:'Water Number',render:(val)=>val||'—'}]} pageSize={25} emptyMessage="No buildings found" onRowClick={(row)=>{setSelectedBuilding(row);setTenantSearch("")}}/>
         </div>
       </> : !selectedTenant ? <>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><button onClick={() => setSelectedBuilding(null)} className="mb-3 text-sm font-semibold text-sky-700 hover:underline">← All buildings</button><h1 className="text-2xl font-bold text-slate-900">Tenants</h1><p className="mt-1 text-sm text-slate-500">{selectedBuilding.name} <span className="mx-2">•</span>{selectedBuilding.id}</p></div><Button onClick={() => { const t: Tenant = { id: Date.now(), name: "New Tenant", type: "Personal", status: "Active", floor: "Ground Floor", floorCode: "FLR000222", unit: "G1", unitCode: "UNT000304", buildingId: selectedBuilding.id }; setTenants(p => [...p, t]); openTenant(t); }}>＋ Create New</Button></div>
-        <div className={cardClass}><div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Tenant directory</h2><p className="mt-1 text-xs text-slate-500">Click a tenant name to open the tenant setup tabs.</p></div><input className={`${inputClass} sm:max-w-xs`} placeholder="Search tenants..." value={tenantSearch} onChange={e => setTenantSearch(e.target.value)} /></div>
-          <DataTable headers={["Tenant Name", "Tenant Type", "Status", "Floor Name", "Floor Code", "Unit", "Unit Code"]}>
-            {filteredTenants.map(t => <tr key={t.id} className="hover:bg-sky-50/60"><td className="px-4 py-4"><button className="font-semibold text-sky-700 hover:underline" onClick={() => openTenant(t)}>{t.name}</button></td><td className="px-4 py-4">{t.type}</td><td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${t.status === "Active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{t.status}</span></td><td className="px-4 py-4">{t.floor}</td><td className="px-4 py-4">{t.floorCode}</td><td className="px-4 py-4">{t.unit}</td><td className="px-4 py-4">{t.unitCode}</td></tr>)}
-          </DataTable><div className="p-5 text-xs text-slate-500">Showing {filteredTenants.length} tenant(s)</div>
+        <div className={cardClass}><div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Tenant directory</h2><p className="mt-1 text-xs text-slate-500">Click a tenant name to open the tenant setup tabs.</p></div></div>
+          <DataTable data={filteredTenants} columns={[{key:'name',label:'Tenant Name',render:(val,row)=>(<button className="font-semibold text-sky-700 hover:underline" onClick={()=>openTenant(row)}>{val}</button>)},{key:'type',label:'Tenant Type'},{key:'status',label:'Status',render:(val)=>(<span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${val === "Active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{val}</span>)},{key:'floor',label:'Floor Name'},{key:'floorCode',label:'Floor Code'},{key:'unit',label:'Unit'},{key:'unitCode',label:'Unit Code'}]} pageSize={25} emptyMessage="No tenants found" onRowClick={(row)=>openTenant(row)}/>
         </div>
       </> : <>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><button onClick={() => setSelectedTenant(null)} className="mb-2 text-sm font-semibold text-sky-700 hover:underline">← Back to tenants</button><h1 className="text-2xl font-bold text-slate-900">{selectedTenant.name}</h1><p className="mt-1 text-sm text-slate-500">{selectedBuilding.name} / {selectedTenant.floor} / Unit {selectedTenant.unit}</p></div><div className="flex gap-2"><Button tone="light" onClick={() => { setSelectedTenant(null); }}>Close</Button><Button onClick={saveTenant}>Save changes</Button></div></div>
