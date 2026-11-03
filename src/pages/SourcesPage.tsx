@@ -1,30 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { listResource, createResource, updateResource } from '../lib/api'
 import { Check, Pencil, Plus, X } from 'lucide-react'
-import { sourceRows } from '../data'
 import { PageHeader, TableWrap, TableHead, Th, Field } from '../shared'
 
 type SourceRow = { code: string; description: string; status: string; date: string }
 
-const initialCreditRows: SourceRow[] = [
-  { code: 'CR000001', description: 'Rent to landlord / Owner', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000002', description: 'Electricity and Water Payment', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000003', description: 'Electricity Payment', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000004', description: 'Water Payment', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000005', description: 'Building Maintenance', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000006', description: 'Building Maintenance/ Electrical', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000007', description: 'Building Maintenance / Plumbing', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000008', description: 'Building Maintenance / Other', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000009', description: 'Insurance', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000010', description: 'Government Fees', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000011', description: 'Commission', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000012', description: 'Building Service Tax', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000013', description: 'Building Service Tax', status: 'Active', date: '11-12-2023' },
-  { code: 'CR000014', description: 'General / Other', status: 'Active', date: '11-12-2023' },
-]
-
-function SourceSection({ title, prefix, initialRows, onEdit }: { title: string; prefix: 'CR' | 'DR'; initialRows: SourceRow[]; onEdit: (row: SourceRow) => void }) {
-  const [rows, setRows] = useState<SourceRow[]>(initialRows)
+function SourceSection({ title, prefix, onEdit }: { title: string; prefix: 'CR' | 'DR'; onEdit: (row: SourceRow) => void }) {
+  const [rows, setRows] = useState<SourceRow[]>([])
   const [apiMessage, setApiMessage] = useState('')
   useEffect(() => { let live = true; listResource('sources').then(data => { if(!live || !data.length) return; setRows(data.map((r:any,i:number)=>({code:String(r.SourceCode ?? r.ItemCode ?? r.SourceID ?? `${prefix}${String(i+1).padStart(6,'0')}`),description:String(r.Description ?? r.SourceName ?? r.Name ?? ''),status:String(r.Status ?? 'Active'),date:String(r.CreatedDate ?? r.Date ?? '')}))); }).catch((e:any)=>{if(live)setApiMessage(`Sources API: ${e.message}`)}); return ()=>{live=false}; }, [prefix])
   const [description, setDescription] = useState('')
@@ -69,8 +51,8 @@ export function SourcesPage({ onEdit, onAdd }: { onEdit: (r: any) => void; onAdd
     <div className="panel" style={{ padding: 24 }}>
       <div style={{ maxWidth: 250 }}><Field label="Organization" type="select" value="Axiom" /></div>
     </div>
-    <SourceSection title="Sources Of Credit" prefix="CR" initialRows={initialCreditRows} onEdit={onEdit} />
-    <SourceSection title="Sources Of Debit" prefix="DR" initialRows={sourceRows as SourceRow[]} onEdit={onEdit} />
+    <SourceSection title="Sources Of Credit" prefix="CR" onEdit={onEdit} />
+    <SourceSection title="Sources Of Debit" prefix="DR" onEdit={onEdit} />
   </div>
 }
 
