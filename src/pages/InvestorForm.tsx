@@ -15,9 +15,9 @@ function toInvestor(r: ApiRecord): Investor {
     buildings: Number(r.Buildings ?? r.buildings ?? 0), status: s(r.Status ?? r.status ?? 'Active')
   }
 }
-export function InvestorForm({ value, onBack, onSave }: { value?: Investor; onBack: () => void; onSave: (investor: Investor) => void }) {
+export function InvestorForm({ value, onBack, onSave }: { value?: string; onBack: () => void; onSave: () => void }) {
   const editing = Boolean(value)
-  const [form, setForm] = useState<Investor>(value || { id: '', name: '', type: 'Owner', address1: '', address2: '', city: '', phone: '', buildings: 0, status: 'Active' })
+  const [form, setForm] = useState<Investor>({ id: value || '', name: '', type: 'Owner', address1: '', address2: '', city: '', phone: '', buildings: 0, status: 'Active' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const set = (key: keyof Investor, value: string | number) => setForm(prev => ({ ...prev, [key]: value }))
@@ -31,10 +31,10 @@ export function InvestorForm({ value, onBack, onSave }: { value?: Investor; onBa
     }
     try {
       const result = editing
-        ? await api.put<{data?: ApiRecord}>(`/investors/${encodeURIComponent(form.id)}`, payload)
-        : await api.post<{data?: ApiRecord}>('/investors', payload)
+        ? await api.update<{data?: ApiRecord}>('investors', form.id, payload)
+        : await api.create<{data?: ApiRecord}>('investors', payload)
       const saved = result?.data ? toInvestor(result.data) : form
-      onSave(saved); 
+      onSave(saved);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to save investor. Check the API and database fields.')
     } finally { setSaving(false) }
