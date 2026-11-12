@@ -18,12 +18,12 @@ export function PageLoader() {
   );
 }
 
-export function Field({label,value,type='text',required,textarea,placeholder,options}:{label:string;value?:string;type?:string;required?:boolean;textarea?:boolean;placeholder?:string;options?:string[]}){
+export function Field({label,value,onChange,type='text',required,textarea,placeholder,options}:{label:string;value?:string;onChange?:(v:string)=>void;type?:string;required?:boolean;textarea?:boolean;placeholder?:string;options?:string[]}){
  return <label className="field"><span>{required&&<i>*</i>}{label}</span>{
   textarea
    ? <textarea defaultValue={value} placeholder={placeholder}/>
    : type==='select'
-    ? <select defaultValue={value}>{placeholder&&<option value="">{placeholder}</option>}{(options||(value?[value]:[])).map(o=><option key={o}>{o}</option>)}</select>
+    ? <select value={value||''} onChange={e=>onChange?.(e.target.value)}>{placeholder&&<option value="">{placeholder}</option>}{(options||(value?[value]:[])).map(o=><option key={o} value={o}>{o}</option>)}</select>
     : <input type={type} defaultValue={value} placeholder={placeholder}/>
  }</label>
 }

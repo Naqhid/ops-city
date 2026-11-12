@@ -31,10 +31,10 @@ export function BuildingCostPage() {
     setLoading(true); setError('')
     try {
       const [b, c] = await Promise.all([
-        apiGet<{data: AnyRow[]}>('/buildings?limit=100'),
-        apiGet<{data: AnyRow[]}>('/costs?limit=100')
+        apiGet<AnyRow[]>('/buildings?limit=100'),
+        apiGet<AnyRow[]>('/costs?limit=100')
       ])
-      setBuildings(b.data || []); setCosts(c.data || [])
+      setBuildings(b || []); setCosts(c || [])
     } catch (e) { setError(e instanceof Error ? e.message : 'Unable to load building cost data.') }
     finally { setLoading(false) }
   }
