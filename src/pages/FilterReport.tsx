@@ -22,7 +22,7 @@ export function FilterReport({ title, filter, headers, rows = [], resource, filt
     if (!resource) return
     let active = true
     setLoading(true); setError('')
-    getResource<Row>(resource, '?limit=100').then(data => { if (active) setRecords(data) })
+    getResource<Row>(resource, { limit: 100 }).then(data => { if (active) setRecords(data) })
       .catch(e => { if (active) setError(e instanceof Error ? e.message : 'Unable to load report data') })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }

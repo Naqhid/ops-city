@@ -55,7 +55,7 @@ export default function Reports() {
   async function downloadReport(report: Report) {
     const resourceByCategory: Record<string,string> = { Financial: "costs", Property: "buildings", Tenant: "tenants", Operations: "costs" };
     try {
-      const rows = await listResource(resourceByCategory[report.category] || "buildings", { limit: 100 });
+      const rows = await listResource<any>(resourceByCategory[report.category] || "buildings");
       if (!rows.length) { setNotice(`${report.name}: the API returned no records for this report.`); return; }
       const columns = Array.from(new Set(rows.flatMap((r:any)=>Object.keys(r))));
       const quote = (v:any) => `"${String(v ?? "").replace(/"/g, '""')}"`;

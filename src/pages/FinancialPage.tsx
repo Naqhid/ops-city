@@ -7,7 +7,7 @@ type Transaction = {
   organization?: string; year?: string; month?: string; method?: string;
 };
 type DbRow = Record<string, unknown>;
-function text(v: unknown, fallback = "") { return v == null ? fallback : String(v); }
+function text(v: unknown, fallback: string | number = "") { return v == null ? String(fallback) : String(v); }
 function number(v: unknown) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 function exportCsv(rows: Transaction[]) {
   const header = ["Source", "Description", "Post/Pay by", "Amount", "DB/CR", "Currency", "Bank details"];
@@ -32,9 +32,9 @@ export default function Financial() {
     let active = true;
     setLoading(true); setError("");
     Promise.all([
-      getResource<DbRow>("costs", "?limit=100"),
-      getResource<DbRow>("rentals", "?limit=100"),
-      getResource<DbRow>("investments", "?limit=100"),
+      getResource<DbRow>("costs", { limit: 100 }),
+      getResource<DbRow>("rentals", { limit: 100 }),
+      getResource<DbRow>("investments", { limit: 100 }),
     ]).then(([costs, rentals, investments]) => {
       const mapped: Transaction[] = [
         ...costs.map((r, i) => ({ id: `cost-${text(r.CostID, i)}`, source: "Costing", description: text(r.Type, "Cost"), postedBy: text(r.Comments, "—"), amount: number(r.Amount), direction: "DB" as const, currency: "QAR", bankDetails: "—", organization: text(r.OrganizationName, "All organizations"), year: text(r.Date).slice(0,4), month: text(r.Date).slice(5,7), method: "—" })),

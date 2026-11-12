@@ -15,7 +15,7 @@ function toInvestor(r: ApiRecord): Investor {
     buildings: Number(r.Buildings ?? r.buildings ?? 0), status: s(r.Status ?? r.status ?? 'Active')
   }
 }
-export function InvestorForm({ value, onBack, onSave }: { value?: string; onBack: () => void; onSave: () => void }) {
+export function InvestorForm({ value, onBack, onSave }: { value?: string; onBack: () => void; onSave: (investor: Investor) => void }) {
   const editing = Boolean(value)
   const [form, setForm] = useState<Investor>({ id: value || '', name: '', type: 'Owner', address1: '', address2: '', city: '', phone: '', buildings: 0, status: 'Active' })
   const [saving, setSaving] = useState(false)
@@ -31,8 +31,8 @@ export function InvestorForm({ value, onBack, onSave }: { value?: string; onBack
     }
     try {
       const result = editing
-        ? await api.update<{data?: ApiRecord}>('investors', form.id, payload)
-        : await api.create<{data?: ApiRecord}>('investors', payload)
+        ? await api.update<ApiRecord, typeof payload>('investors', form.id, payload)
+        : await api.create<ApiRecord, typeof payload>('investors', payload)
       const saved = result?.data ? toInvestor(result.data) : form
       onSave(saved);
     } catch (e) {
@@ -40,7 +40,7 @@ export function InvestorForm({ value, onBack, onSave }: { value?: string; onBack
     } finally { setSaving(false) }
   }
   return <div className="page-stack">
-    <PageHeader title={editing ? 'Edit Investor / Owner' : 'Create Investor / Owner'} subtitle={editing ? `Update ${value?.name || 'investor'} details.` : 'Create a new property owner or investor.'} action={<button className="secondary-btn" onClick={onBack}><ArrowLeft size={16}/> Back</button>}/>
+    <PageHeader title={editing ? 'Edit Investor / Owner' : 'Create Investor / Owner'} subtitle={editing ? `Update ${value || 'investor'} details.` : 'Create a new property owner or investor.'} action={<button className="secondary-btn" onClick={onBack}><ArrowLeft size={16}/> Back</button>}/>
     <form className="form-stack" onSubmit={submit}>
       <section className="form-card">
         <div className="form-card-head"><span><UserRound size={17}/></span><div><h2>Investor / Owner Details</h2><p>Basic contact and portfolio information.</p></div></div>

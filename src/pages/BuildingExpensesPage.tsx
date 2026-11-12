@@ -48,7 +48,7 @@ export function BuildingExpensesPage(props:{query?:string;setQuery?:(v:string)=>
     const date=String(val(r,'Date','date')||'')
     const d=date?new Date(date):null
     const amount=String(val(r,'Amount','amount')??'')
-    return {id:Number(val(r,'CostID','id')||i+1),year:d&&!Number.isNaN(d.getTime())?String(d.getFullYear()):'',month:d&&!Number.isNaN(d.getTime())?d.toLocaleString(undefined,{month:'long'}):'',date,date,type:String(val(r,'Type','type')),currency:String(val(r,'Currency','currency')||''),totalAmount:amount,payingAmount:String(val(r,'PayingAmount','payingAmount')||''),balance:String(val(r,'Balance','balance')||''),buildingId:String(val(r,'BuildingID','buildingId')||'')}
+    return {id:Number(val(r,'CostID','id')||i+1),year:d&&!Number.isNaN(d.getTime())?String(d.getFullYear()):'',month:d&&!Number.isNaN(d.getTime())?d.toLocaleString(undefined,{month:'long'}):'',date,type:String(val(r,'Type','type')),currency:String(val(r,'Currency','currency')||''),totalAmount:amount,payingAmount:String(val(r,'PayingAmount','payingAmount')||''),balance:String(val(r,'Balance','balance')||''),buildingId:String(val(r,'BuildingID','buildingId')||'')}
   }),[records,tab,buildingId,unit])
   const filtered=useMemo(()=>activeRows.filter(row=>Object.values(row).join(' ').toLowerCase().includes(search.toLowerCase())),[activeRows,search])
   const visible=filtered.slice((page-1)*Number(pageSize),page*Number(pageSize))

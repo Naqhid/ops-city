@@ -48,6 +48,14 @@ function Section({ title, children, className = "" }: { title: string; children:
     <div className="p-5">{children}</div>
   </section>;
 }
+function SimpleTable({ headers, children }: { headers: string[]; children: React.ReactNode }) {
+  return <div className="w-full overflow-x-auto rounded-xl border border-slate-200">
+    <table className="w-full border-collapse text-sm">
+      <thead><tr>{headers.map((h, i) => <th key={i} className="whitespace-nowrap border-b border-slate-200 bg-slate-100 px-4 py-3 text-left font-semibold text-slate-700">{h}</th>)}</tr></thead>
+      <tbody>{children}</tbody>
+    </table>
+  </div>;
+}
 function Button({ children, onClick, tone = "primary", type = "button" }: { children: React.ReactNode; onClick?: () => void; tone?: "primary" | "dark" | "success" | "warning" | "danger" | "light"; type?: "button" | "submit" }) {
   const tones = {
     primary: "bg-sky-600 text-white hover:bg-sky-700",
@@ -229,9 +237,9 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
               {showSchedule("noticeDate", "Notice Date")}
             </div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h4 className="font-semibold text-slate-700">Rental payment schedule</h4><div className="flex gap-2"><Button tone="light" onClick={() => setPaymentRows(p => [...p, { id: Date.now(), type: "Monthly Rent", description: "Monthly Rent", amount: "4500", date: "02/05/2026", method: "Cheque" }])}>＋ Add row</Button><Button tone="light" onClick={() => notify("Schedule refreshed.")}>↻ Refresh</Button></div></div>
-            <DataTable headers={["Type", "Description", "Amount", "Pay Date", "Payment Method", ""]}>
+            <SimpleTable headers={["Type", "Description", "Amount", "Pay Date", "Payment Method", ""]}>
               {paymentRows.map((r, i) => <tr key={r.id}><td className="min-w-40 px-3 py-2"><select className={inputClass} value={r.type} onChange={e => setPaymentRows(p => p.map(x => x.id === r.id ? { ...x, type: e.target.value } : x))}><option>Monthly Rent</option><option>Security Deposit</option><option>Utilities</option><option>Other</option></select></td><td className="min-w-40 px-3 py-2"><input className={inputClass} value={r.description} onChange={e => setPaymentRows(p => p.map(x => x.id === r.id ? { ...x, description: e.target.value } : x))} /></td><td className="min-w-28 px-3 py-2"><input className={inputClass} value={r.amount} onChange={e => setPaymentRows(p => p.map(x => x.id === r.id ? { ...x, amount: e.target.value } : x))} /></td><td className="min-w-36 px-3 py-2"><input className={inputClass} value={r.date} onChange={e => setPaymentRows(p => p.map(x => x.id === r.id ? { ...x, date: e.target.value } : x))} /></td><td className="min-w-36 px-3 py-2"><select className={inputClass} value={r.method} onChange={e => setPaymentRows(p => p.map(x => x.id === r.id ? { ...x, method: e.target.value } : x))}><option>Cheque</option><option>Cash</option><option>Bank Transfer</option><option>Card</option></select></td><td className="px-3 py-2"><Button tone="danger" onClick={() => setPaymentRows(p => p.filter(x => x.id !== r.id))}>−</Button></td></tr>)}
-            </DataTable>
+            </SimpleTable>
             <div className="mt-6 grid gap-5 lg:grid-cols-2">
               <div className="rounded-xl border border-dashed border-slate-300 p-4">
                 <h4 className="mb-4 font-semibold text-slate-700">Supporting Documents</h4>
@@ -274,9 +282,9 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
                 <input type="file" className="hidden" onChange={e => setAttachmentFile(e.target.files?.[0] ?? null)} />
               </label>
             </div>
-            <div className="mt-5"><DataTable headers={["Attachment", "Title", "Type", ""]}>
+            <div className="mt-5"><SimpleTable headers={["Attachment", "Title", "Type", ""]}>
               {attachments.map((a, i) => <tr key={`${a.name}-${i}`}><td className="px-4 py-3">{a.name}</td><td className="px-4 py-3">{a.title}</td><td className="px-4 py-3">{a.type}</td><td className="px-4 py-3"><Button tone="danger" onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}>Remove</Button></td></tr>)}
-            </DataTable>{attachments.length === 0 && <p className="px-3 py-3 text-sm text-slate-500">No documents attached.</p>}</div>
+            </SimpleTable>{attachments.length === 0 && <p className="px-3 py-3 text-sm text-slate-500">No documents attached.</p>}</div>
           </Section>
           <div className="flex justify-end"><Button onClick={saveTenant}>Save changes</Button></div>
         </div>}
@@ -285,9 +293,9 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
           <div className="border-b border-slate-100 p-5"><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">{[["Organization", "Axiom"], ["Building", selectedBuilding.name], ["Floor", selectedTenant.floor], ["Unit", selectedTenant.unit], ["Tenant", selectedTenant.name]].map(([k, v]) => <div key={k}><div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{k}</div><div className="mt-1 font-semibold text-slate-800">{v}</div></div>)}</div></div>
           <div className="flex flex-wrap items-center justify-between gap-3 p-5"><div className="flex flex-wrap items-center gap-2"><Field label="From" value="01/04/2026" onChange={() => {}}/><Field label="To" value="31/03/2027" onChange={() => {}}/><Button onClick={() => notify("Transaction filter applied.")}>Search</Button></div><div className="flex flex-wrap gap-2"><Button tone="success" onClick={() => setShowRentModal(true)}>＋ Add Rental</Button><button type="button" onClick={() => setShowReceiptModal(true)} style={{ backgroundColor: "#0284c7", color: "#ffffff" }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold shadow-sm transition hover:brightness-110">Receipt</button><Button tone="dark" onClick={() => notify("Email action selected.")}>Email</Button></div></div>
           <div className="px-5 pb-5"><div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div className="text-sm text-slate-500">{rentRows.length} rent entries</div><input className={`${inputClass} sm:max-w-xs`} placeholder="Search transactions..." onChange={e => { const value = e.target.value.toLowerCase(); const rows = document.querySelectorAll("[data-rent-row]"); rows.forEach(row => { (row as HTMLElement).style.display = row.textContent?.toLowerCase().includes(value) ? "" : "none"; }); }} /></div>
-            <DataTable headers={["", "Year", "Month", "Date", "Rent Type", "Payment Method", "Description", "Currency", "Total Amount", "Paying Amount", "Balance", "Actions"]}>
+            <SimpleTable headers={["", "Year", "Month", "Date", "Rent Type", "Payment Method", "Description", "Currency", "Total Amount", "Paying Amount", "Balance", "Actions"]}>
               {rentRows.map(r => <tr key={r.id} data-rent-row><td className="px-4 py-3"><input type="checkbox" /></td><td className="px-4 py-3">{r.year}</td><td className="px-4 py-3">{r.month}</td><td className="whitespace-nowrap px-4 py-3">{r.date}</td><td className="px-4 py-3">{r.type}</td><td className="px-4 py-3">{r.method}</td><td className="px-4 py-3">{r.description}</td><td className="px-4 py-3">{r.currency}</td><td className="px-4 py-3 font-semibold">{r.total.toLocaleString()}</td><td className="px-4 py-3">{r.paid.toLocaleString()}</td><td className="px-4 py-3">{r.balance.toLocaleString()}</td><td className="whitespace-nowrap px-4 py-3"><div className="flex items-center gap-1.5">{r.posted ? <IconButton tone="success" title="View receipt" onClick={() => { setActiveRentId(r.id); setShowReceiptModal(true); }}><Eye size={16} /></IconButton> : <><button type="button" onClick={() => { setActiveRentId(r.id); setShowPaymentModal(true); }} style={{ backgroundColor: "#0284c7", color: "#ffffff" }} className="inline-flex items-center whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm transition hover:brightness-110">Pay/Post</button><IconButton tone="success" title="Edit rent" onClick={() => { setActiveRentId(r.id); setRentForm({ year: String(r.year), month: r.month, date: r.date, paymentFor: r.type, currency: r.currency, amount: String(r.total), payingAmount: String(r.paid) }); setShowRentModal(true); }}><Pencil size={16} /></IconButton><IconButton tone="danger" title="Delete rent" onClick={() => setRentRows(p => p.filter(x => x.id !== r.id))}><Trash2 size={16} /></IconButton></>}</div></td></tr>)}
-            </DataTable>
+            </SimpleTable>
           </div>
         </div>}
       </>}
