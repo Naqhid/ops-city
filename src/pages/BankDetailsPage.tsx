@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { banksApi, Bank } from "../api/client";
+import { PageHeader, TableWrap, TableHead, Th, Pagination, PageLoader } from "../shared";
+import { Plus, Search, Pencil, Eye, Trash2, ArrowLeft, Save } from "lucide-react";
 
 type BankForm = Omit<Bank, "id">;
 
@@ -155,14 +157,6 @@ export default function BankDetailsPage() {
     fetchBanks();
   }, [fetchBanks]);
 
-  const inputClass =
-    "mt-2 block w-full rounded-[3px] border border-[#dce3ee] bg-white px-4 py-[10px] text-[15px] text-[#7caeaa] outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-[#f0edf6]";
-  const labelClass = "block text-[14px] font-normal text-[#151515]";
-  const actionClass =
-    "inline-flex h-10 items-center justify-center rounded-[3px] px-4 text-sm font-medium text-white transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-1";
-  const buttonBlue = `${actionClass} bg-[#08b4e5] focus:ring-sky-300`;
-  const buttonDark = `${actionClass} bg-[#2c3e50] focus:ring-slate-300`;
-
   const FormField = ({
     label,
     field,
@@ -178,11 +172,10 @@ export default function BankDetailsPage() {
     multiline?: boolean;
     type?: string;
   }) => (
-    <label className={labelClass}>
-      {required && <span className="text-red-500">*</span>} {label}
+    <label className="field-wrap">
+      <span>{required && <em>*</em>}{label}</span>
       {multiline ? (
         <textarea
-          className={`${inputClass} min-h-[62px] resize-y`}
           value={form[field]}
           onChange={(event) => setField(field, event.target.value)}
           disabled={disabled}
@@ -190,7 +183,6 @@ export default function BankDetailsPage() {
         />
       ) : (
         <input
-          className={inputClass}
           type={type}
           value={form[field]}
           onChange={(event) => setField(field, event.target.value)}
@@ -201,295 +193,149 @@ export default function BankDetailsPage() {
     </label>
   );
 
-  const DetailValue = ({ value }: { value: string }) => (
-    <div className={`${inputClass} min-h-[39px]`}>{value || "\u00a0"}</div>
-  );
-
   if (loading && mode === "list" && banks.length === 0) {
-    return (
-      <div className="min-h-screen bg-[#f0eef7] text-[#111827]">
-        <div className="bank-page">
-          <header className="flex h-[62px] items-center justify-between border-b border-[#e4e8ef] bg-white px-8">
-            <div className="flex items-center gap-5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eef5ff] text-[#2875d9]">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 9h18M5 9V20h14V9M3 7l9-4 9 4M9 12v5m6-5v5" />
-                </svg>
-              </div>
-              <span className="text-sm text-[#68758a]">CityOps <span className="mx-2 text-slate-300">›</span> Bank Details</span>
-            </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#b8bbc3] text-xs text-white">AK</div>
-          </header>
-          <main className="mx-auto w-full max-w-[1600px] px-6 py-5 md:px-8">
-            <div className="text-center py-10">
-              <p>Loading banks...</p>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
+    return <div className="page-stack"><PageLoader /></div>;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f0eef7] text-[#111827]">
-        <div className="bank-page">
-          <header className="flex h-[62px] items-center justify-between border-b border-[#e4e8ef] bg-white px-8">
-            <div className="flex items-center gap-5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eef5ff] text-[#2875d9]">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 9h18M5 9V20h14V9M3 7l9-4 9 4M9 12v5m6-5v5" />
-                </svg>
-              </div>
-              <span className="text-sm text-[#68758a]">CityOps <span className="mx-2 text-slate-300">›</span> Bank Details</span>
-            </div>
-          </header>
-          <main className="mx-auto w-full max-w-[1600px] px-6 py-5 md:px-8">
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-6">
-              <strong>Error:</strong> {error}
-              <button className="ml-4" onClick={refreshList}>Retry</button>
-            </div>
-          </main>
+      <div className="page-stack">
+        <PageHeader title="Bank Details" subtitle="Maintain bank accounts and settlement information." />
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <strong>Error:</strong> {error}{" "}
+          <button type="button" className="ml-3 underline" onClick={refreshList}>Retry</button>
         </div>
       </div>
     );
   }
 
+  const titles: Record<Mode, { title: string; subtitle: string }> = {
+    list: { title: "Banks", subtitle: "Maintain bank accounts and settlement information." },
+    details: { title: "Item Type Details", subtitle: "View saved bank account information." },
+    create: { title: "Bank Details", subtitle: "Add a bank account and settlement information." },
+    edit: { title: "Bank Details", subtitle: "Update bank account information." },
+  };
+
+  const detailFields: [string, string][] = selected ? [
+    ["Organization", selected.organization],
+    ["Item Code", selected.itemCode],
+    ["Item Type", selected.description],
+    ["Account Number", selected.accountNumber],
+    ["IBAN Code", selected.ibanCode],
+    ["Account Name", selected.accountName],
+    ["Account Type", selected.accountType],
+    ["Bank Name", selected.bankName],
+    ["IFSC Code", selected.ifscCode],
+    ["MICR Code", selected.micrCode],
+    ["Branch", selected.branch],
+    ["Address", selected.address],
+    ["Country", selected.country],
+    ["Contact Name", selected.contactName],
+    ["Contact Number", selected.contactNumber],
+    ["Contact Email", selected.contactEmail],
+  ] : [];
+
   return (
-    <div className="min-h-screen bg-[#f0eef7] text-[#111827]">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
-        .bank-page, .bank-page * { font-family: Roboto, Arial, sans-serif; box-sizing: border-box; }
-        .bank-table th { background:#aeb5bc; color:#111; font-weight:500; }
-        .bank-table th, .bank-table td { border:1px solid #e0e5ee; }
-        .bank-table tbody tr:nth-child(even) { background:#faf9fc; }
-      `}</style>
-      <div className="bank-page">
-        <header className="flex h-[62px] items-center justify-between border-b border-[#e4e8ef] bg-white px-8">
-          <div className="flex items-center gap-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eef5ff] text-[#2875d9]">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M3 9h18M5 9V20h14V9M3 7l9-4 9 4M9 12v5m6-5v5" />
-              </svg>
-            </div>
-            <span className="text-sm text-[#68758a]">CityOps <span className="mx-2 text-slate-300">›</span> Bank Details</span>
+    <div className="page-stack">
+      <PageHeader
+        title={titles[mode].title}
+        subtitle={titles[mode].subtitle}
+        action={mode === "list"
+          ? <button className="primary-btn" onClick={openCreate} disabled={loading}><Plus size={16}/> Create New</button>
+          : <button className="secondary-btn" onClick={returnToList} disabled={loading}><ArrowLeft size={16}/> Back</button>}
+      />
+
+      {notice && (
+        <div role="status" className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {notice}
+          <button type="button" className="ml-4 text-lg leading-none" onClick={() => setNotice("")} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
+      {mode === "list" ? (
+        <section className="panel">
+          <div className="panel-head" style={{ marginBottom: 14 }}>
+            <div><h2>Bank accounts</h2><p>Registered banks available for settlements and payments.</p></div>
+            <label className="search"><Search size={15}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search banks" disabled={loading}/></label>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#b8bbc3] text-xs text-white">AK</div>
-        </header>
-
-        <main className="mx-auto w-full max-w-[1600px] px-6 py-5 md:px-8">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <div className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#2875d9]">CITYOPS · MANAGEMENT</div>
-              <h1 className="text-[26px] font-semibold text-[#263f59]">
-                {mode === "list" ? "Banks" : mode === "details" ? "Item Type Details" : "Bank Details"}
-              </h1>
-              <p className="mt-1 text-sm text-[#7b8ba4]">
-                {mode === "list" ? "Maintain bank accounts and settlement information." :
-                  mode === "details" ? "View saved bank account information." :
-                  mode === "edit" ? "Update bank account information." : "Add a bank account and settlement information."}
-              </p>
-            </div>
-            {mode === "list" && (
-              <button className={buttonBlue} onClick={openCreate} disabled={loading}>
-                + Create New
-              </button>
-            )}
+          <TableWrap>
+            <TableHead><Th>Item Code</Th><Th>Item Type</Th><Th>Description</Th><Th>Bank Name</Th><Th>Action</Th></TableHead>
+            <tbody>
+              {filteredBanks.map((bank) => (
+                <tr key={bank.id}>
+                  <td><b style={{ color: '#293b57' }}>{bank.itemCode}</b></td>
+                  <td>{bank.itemType}</td>
+                  <td>{bank.description}</td>
+                  <td>{bank.bankName}</td>
+                  <td>
+                    <div className="row-actions">
+                      <button title="Edit bank" aria-label={`Edit ${bank.itemCode}`} onClick={() => openEdit(bank)} disabled={loading}><Pencil size={14}/></button>
+                      <button title="View bank details" aria-label={`View ${bank.itemCode}`} onClick={() => openDetails(bank)} disabled={loading}><Eye size={14}/></button>
+                      <button title="Delete bank" aria-label={`Delete ${bank.itemCode}`} onClick={() => deleteBank(bank)} style={{ color: '#d64545' }} disabled={loading}><Trash2 size={14}/></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredBanks.length === 0 && <tr><td className="empty-row" colSpan={5}>No banks found.{search ? ' Try clearing your search.' : ''}</td></tr>}
+            </tbody>
+          </TableWrap>
+          <Pagination total={filteredBanks.length} />
+        </section>
+      ) : mode === "details" && selected ? (
+        <section className="panel">
+          <div className="panel-head" style={{ marginBottom: 18 }}>
+            <div><h2>{selected.itemCode}</h2><p>{selected.bankName} · {selected.accountName}</p></div>
+            <span className="badge blue">{selected.itemType || 'Bank'}</span>
           </div>
-
-          {notice && (
-            <div className="mb-4 flex items-center justify-between rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              {notice}
-              <button className="ml-4 text-lg leading-none" onClick={() => setNotice("")} aria-label="Dismiss">×</button>
+          <div className="form-grid three">
+            {detailFields.map(([label, value]) => (
+              <label className="field-wrap" key={label}><span>{label}</span><input readOnly value={value || ''}/></label>
+            ))}
+          </div>
+          <div className="inline-actions" style={{ justifyContent: 'flex-end', marginTop: 18 }}>
+            <button className="secondary-btn" onClick={returnToList} disabled={loading}><ArrowLeft size={15}/> Return</button>
+            <button className="primary-btn" onClick={() => openEdit(selected)} disabled={loading}><Pencil size={15}/> Edit</button>
+          </div>
+        </section>
+      ) : (
+        <section className="panel">
+          <form onSubmit={saveForm}>
+            <div className="panel-head" style={{ marginBottom: 18 }}>
+              <div><h2>{mode === "edit" ? "Edit bank account" : "New bank account"}</h2><p>{mode === "edit" ? `Updating ${selected?.itemCode || 'bank'} details.` : "Fill in the bank and settlement information."}</p></div>
             </div>
-          )}
-
-          {mode === "list" ? (
-            <section className="overflow-hidden rounded-[4px] border border-[#e2e7ef] bg-white shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e2e7ef] px-6 py-4">
-                <h2 className="text-[17px] font-medium text-[#b12626]">Banks</h2>
-                <label className="flex items-center gap-3 text-sm text-[#333]">
-                  Search:
-                  <input 
-                    value={search} 
-                    onChange={(event) => setSearch(event.target.value)} 
-                    className="h-9 w-52 rounded-[3px] border border-[#dce3ee] px-3 outline-none focus:border-sky-400"
-                    disabled={loading}
-                  />
-                </label>
-              </div>
-              <div className="overflow-x-auto px-6 py-5">
-                <div className="mb-3 text-sm text-[#333]">
-                  Show <select 
-                    className="mx-1 rounded border border-[#dce3ee] bg-white px-3 py-1.5 text-[#7b8ba4]"
-                    disabled
-                  >
-                    <option>25</option><option>50</option><option>100</option>
-                  </select> entries
-                </div>
-                {loading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : (
-                  <table className="bank-table w-full min-w-[780px] border-collapse text-left text-sm">
-                    <thead><tr>
-                      <th className="px-3 py-3">Item Code <span className="float-right text-slate-600">↕</span></th>
-                      <th className="px-3 py-3">Item Type <span className="float-right text-slate-600">↕</span></th>
-                      <th className="px-3 py-3">Description <span className="float-right text-slate-600">↕</span></th>
-                      <th className="px-3 py-3">Bank Name <span className="float-right text-slate-600">↕</span></th>
-                      <th className="w-[190px] px-3 py-3 text-center">Action</th>
-                    </tr></thead>
-                    <tbody>
-                      {filteredBanks.map((bank) => (
-                        <tr key={bank.id}>
-                          <td className="px-3 py-3">{bank.itemCode}</td>
-                          <td className="px-3 py-3">{bank.itemType}</td>
-                          <td className="px-3 py-3">{bank.description}</td>
-                          <td className="px-3 py-3">{bank.bankName}</td>
-                          <td className="px-3 py-2">
-                            <div className="flex justify-center gap-1.5">
-                              <button 
-                                title="Edit bank" 
-                                aria-label={`Edit ${bank.itemCode}`} 
-                                onClick={() => openEdit(bank)} 
-                                className="flex h-[27px] w-[30px] items-center justify-center rounded bg-[#00d98b] text-white hover:bg-[#00c47d]"
-                                disabled={loading}
-                              >
-                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10M14 4l6 6M9 15l9-9 3 3-9 9-4 1z" /></svg>
-                              </button>
-                              <button 
-                                title="View bank details" 
-                                aria-label={`View ${bank.itemCode}`} 
-                                onClick={() => openDetails(bank)} 
-                                className="flex h-[27px] w-[30px] items-center justify-center rounded bg-[#08aee0] text-white hover:bg-[#079bc8]"
-                                disabled={loading}
-                              >
-                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 11v5m0-8h.01" /></svg>
-                              </button>
-                              <button 
-                                title="Delete bank" 
-                                aria-label={`Delete ${bank.itemCode}`} 
-                                onClick={() => deleteBank(bank)} 
-                                className="flex h-[27px] w-[30px] items-center justify-center rounded bg-[#ff3d3d] text-white hover:bg-[#e92d2d]"
-                                disabled={loading}
-                              >
-                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" /></svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredBanks.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-500">No banks found. {search && 'Try clearing your search.'}</td></tr>}
-                    </tbody>
-                  </table>
-                )}
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-[#333]">
-                  <span>Showing {filteredBanks.length ? 1 : 0} to {filteredBanks.length} of {filteredBanks.length} entries</span>
-                  <div className="flex items-center gap-0.5">
-                    <button disabled className="rounded border border-[#dce3ee] px-3 py-2 text-slate-300">Previous</button>
-                    <button className="bg-[#2c3e50] px-4 py-2 text-white">1</button>
-                    <button disabled className="rounded border border-[#dce3ee] px-3 py-2 text-slate-300">Next</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          ) : mode === "details" && selected ? (
-            <section className="rounded-[4px] border border-[#e2e7ef] bg-white p-6 shadow-sm md:p-8">
-              <h2 className="border-b border-[#e1e5eb] pb-5 text-[23px] font-normal text-[#273b50]">Item Type Details</h2>
-              <div className="mt-8 grid grid-cols-1 gap-x-6 gap-y-4 rounded-md border border-[#e2e7ef] p-5 md:grid-cols-2">
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Organization</span><DetailValue value={selected.organization} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Item Code</span><DetailValue value={selected.itemCode} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Item Type</span><DetailValue value={selected.description} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Account Number</span><DetailValue value={selected.accountNumber} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>IBAN Code</span><DetailValue value={selected.ibanCode} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Account Name</span><DetailValue value={selected.accountName} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Account Type</span><DetailValue value={selected.accountType} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Bank Name</span><DetailValue value={selected.bankName} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>IFSC Code</span><DetailValue value={selected.ifscCode} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>MICR Code</span><DetailValue value={selected.micrCode} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Branch</span><DetailValue value={selected.branch} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Address</span><DetailValue value={selected.address} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Country</span><DetailValue value={selected.country} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Contact Name</span><DetailValue value={selected.contactName} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Contact Number</span><DetailValue value={selected.contactNumber} /></div>
-                <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4"><span className={labelClass}>Contact Email</span><DetailValue value={selected.contactEmail} /></div>
-              </div>
-              <div className="mt-6 flex justify-center gap-2">
-                <button className={buttonDark} onClick={returnToList} disabled={loading}>Return</button>
-                <button className={buttonBlue} onClick={() => openEdit(selected)} disabled={loading}>Edit</button>
-              </div>
-            </section>
-          ) : (
-            <section className="rounded-[4px] border border-[#e2e7ef] bg-white p-6 shadow-sm md:p-8">
-              <h2 className="mb-8 text-[17px] font-medium text-[#b12626]">Bank Details</h2>
-              <form onSubmit={saveForm}>
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-3">
-                  <FormField label="Organization" field="organization" required />
-                  <FormField label="Account Number" field="accountNumber" required />
-                  <FormField label="Account Name" field="accountName" required />
-                  <label className={labelClass}>* Account Type
-                    <select 
-                      className={inputClass} 
-                      value={form.accountType} 
-                      onChange={(event) => setField("accountType", event.target.value)} 
-                      required
-                      disabled={loading}
-                    >
-                      <option>Current Account</option><option>Savings Account</option><option>Cash</option><option>Other</option>
-                    </select>
-                  </label>
-                  <FormField label="IBAN Code" field="ibanCode" />
-                  <FormField label="Swift Code" field="swiftCode" />
-                  <FormField label="Bank Name" field="bankName" required />
-                  <FormField label="Branch" field="branch" />
-                  <FormField label="Bank Code" field="bankCode" disabled />
-                  <FormField label="IFSC Code" field="ifscCode" />
-                  <FormField label="MICR Code" field="micrCode" />
-                  <FormField label="Address" field="address" multiline />
-                  <label className={labelClass}>Country
-                    <select 
-                      className={inputClass} 
-                      value={form.country} 
-                      onChange={(event) => setField("country", event.target.value)}
-                      disabled={loading}
-                    >
-                      <option>Qatar</option><option>India</option><option>United Arab Emirates</option><option>Saudi Arabia</option><option>United Kingdom</option><option>United States</option>
-                    </select>
-                  </label>
-                  <FormField label="Contact Name" field="contactName" />
-                  <FormField label="Contact Number" field="contactNumber" />
-                  <FormField label="Contact Email" field="contactEmail" type="email" />
-                </div>
-                <div className="mt-5 flex flex-wrap gap-1">
-                  <button 
-                    type="submit" 
-                    className={buttonBlue}
-                    disabled={loading}
-                  >
-                    {loading ? 'Saving...' : 'Save'}
-                  </button>
-                  <button 
-                    type="button" 
-                    className={buttonDark} 
-                    onClick={returnToList}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="button" 
-                    className={buttonBlue} 
-                    onClick={returnToList}
-                    disabled={loading}
-                  >
-                    Return
-                  </button>
-                </div>
-              </form>
-            </section>
-          )}
-        </main>
-        <footer className="mt-6 bg-white py-6 text-center text-sm text-[#9aa8bc]">Copyright © 2026 - CityApp All rights reserved.</footer>
-      </div>
+            <div className="form-grid three">
+              <FormField label="Organization" field="organization" required />
+              <FormField label="Account Number" field="accountNumber" required />
+              <FormField label="Account Name" field="accountName" required />
+              <label className="field-wrap"><span><em>*</em>Account Type</span>
+                <select value={form.accountType} onChange={(event) => setField("accountType", event.target.value)} required disabled={loading}>
+                  <option>Current Account</option><option>Savings Account</option><option>Cash</option><option>Other</option>
+                </select>
+              </label>
+              <FormField label="IBAN Code" field="ibanCode" />
+              <FormField label="Swift Code" field="swiftCode" />
+              <FormField label="Bank Name" field="bankName" required />
+              <FormField label="Branch" field="branch" />
+              <FormField label="Bank Code" field="bankCode" disabled />
+              <FormField label="IFSC Code" field="ifscCode" />
+              <FormField label="MICR Code" field="micrCode" />
+              <FormField label="Address" field="address" multiline />
+              <label className="field-wrap"><span>Country</span>
+                <select value={form.country} onChange={(event) => setField("country", event.target.value)} disabled={loading}>
+                  <option>Qatar</option><option>India</option><option>United Arab Emirates</option><option>Saudi Arabia</option><option>United Kingdom</option><option>United States</option>
+                </select>
+              </label>
+              <FormField label="Contact Name" field="contactName" />
+              <FormField label="Contact Number" field="contactNumber" />
+              <FormField label="Contact Email" field="contactEmail" type="email" />
+            </div>
+            <div className="inline-actions" style={{ justifyContent: 'flex-end', marginTop: 18 }}>
+              <button type="button" className="secondary-btn" onClick={returnToList} disabled={loading}><ArrowLeft size={15}/> Cancel</button>
+              <button type="submit" className="primary-btn" disabled={loading}><Save size={15}/> {loading ? 'Saving…' : 'Save'}</button>
+            </div>
+          </form>
+        </section>
+      )}
     </div>
   );
 }

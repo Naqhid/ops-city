@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { apiGet } from '../api/client'
+import { Search } from 'lucide-react'
+import { PageHeader, TableWrap, TableHead, Th } from '../shared'
 
 type AnyRow = Record<string, any>
 type ExpenseRow = { id:number; year:string; month:string; date:string; type:string; electricityReading?:string; waterReading?:string; currency:string; totalAmount:string; payingAmount:string; balance:string; buildingId:string }
 const val = (row: AnyRow, ...keys:string[]) => { const k=keys.find(key=>row?.[key]!==undefined&&row?.[key]!==null); return k ? row[k] : '' }
-const styles = `
-.be-page{color:#17243b;font-family:inherit;min-width:0}.be-tabs{display:flex;gap:8px}.be-tab{border:0;background:transparent;color:#64748b;padding:18px 26px;cursor:pointer;font-size:14px}.be-tab.active{background:#1d4ed8;color:#fff}.be-card{background:#fff;border:1px solid #e3e8f0;border-radius:5px;box-shadow:0 4px 15px rgba(22,40,65,.08);padding:24px;margin-bottom:22px}.be-info{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:22px;margin-bottom:26px;font-size:14px}.be-warning{color:#f04444;text-align:center}.be-filterrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;align-items:center;margin-bottom:24px}.be-field{display:flex;gap:10px;align-items:center;min-width:0;font-size:14px}.be-field label{white-space:nowrap}.be-field select,.be-field input{height:42px;box-sizing:border-box;border:1px solid #dce3ee;border-radius:2px;padding:0 12px;color:#60708a;background:#fff;min-width:0;width:100%;font:inherit}.be-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px;font-size:14px;color:#6b7b95}.be-toolbar select,.be-toolbar input{border:1px solid #dce3ee;padding:8px 10px;color:#64748b;background:white;border-radius:3px;margin:0 6px}.be-toolbar input{width:180px;max-width:45vw;color:#334155}.be-tablewrap{width:100%;overflow:auto;border:1px solid #e3e8f0}.be-table{width:100%;border-collapse:collapse;min-width:940px;font-size:14px}.be-table th{background:#aeb6bf;color:#101820;text-align:left;padding:15px 12px;font-weight:600;border-right:1px solid #fff}.be-table td{padding:14px 12px;border:1px solid #e3e8f0;white-space:nowrap}.be-table tbody tr:nth-child(even){background:#faf9fc}.be-table .empty{text-align:center;color:#64748b;padding:20px}.be-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#718096;font-size:14px;padding-top:12px}.be-pages{display:flex}.be-pages button{border:1px solid #dce3ee;background:#fff;color:#7c8aa0;padding:8px 13px}.be-pages button.current{background:#1d4ed8;color:white}.be-error{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3;padding:12px;margin-bottom:12px}.be-mobilelabel{display:none}
-@media(max-width:900px){.be-info{grid-template-columns:repeat(2,minmax(120px,1fr))}.be-filterrow{grid-template-columns:1fr}.be-card{padding:16px}.be-tabs .be-tab{padding:14px 16px}.be-toolbar{align-items:flex-start;flex-direction:column}.be-toolbar input{max-width:100%;width:100%}.be-footer{align-items:flex-start;flex-direction:column}}
-`
 export function BuildingExpensesPage(props:{query?:string;setQuery?:(v:string)=>void}) {
   const [tab,setTab]=useState<'expenses'|'maintenance'>('expenses')
   const [unit,setUnit]=useState('')
@@ -53,26 +51,43 @@ export function BuildingExpensesPage(props:{query?:string;setQuery?:(v:string)=>
   const filtered=useMemo(()=>activeRows.filter(row=>Object.values(row).join(' ').toLowerCase().includes(search.toLowerCase())),[activeRows,search])
   const visible=filtered.slice((page-1)*Number(pageSize),page*Number(pageSize))
   const updateSearch=(v:string)=>{setSearch(v);setPage(1);props.setQuery?.(v)}
-  const selectedUnit=availableUnits.find(u=>String(val(u,'UnitID','UnitCode','UnitName'))===unit)
-  return <div className="be-page"><style>{styles}</style>
-    <div className="be-tabs" role="tablist" aria-label="Building expense sections">
-      <button type="button" role="tab" aria-selected={tab==='expenses'} className={`be-tab ${tab==='expenses'?'active':''}`} onClick={()=>{setTab('expenses');setPage(1)}}>W/E Expenses</button>
-      <button type="button" role="tab" aria-selected={tab==='maintenance'} className={`be-tab ${tab==='maintenance'?'active':''}`} onClick={()=>{setTab('maintenance');setPage(1)}}>Maintenance</button>
+  const headers=['#','Year','Month','Date','Expense Type',...(tab==='expenses'?['Electricity Reading','Water Reading']:[]),'Currency','Total Amount','Paying Amount','Balance']
+  const colCount=headers.length
+  const pageCount=Math.max(1,Math.ceil(filtered.length/Number(pageSize)))
+  return <div className="page-stack">
+    {error&&<div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error} <button type="button" className="ml-3 underline" onClick={()=>void load()}>Retry</button></div>}
+    <PageHeader title="Building Expenses" subtitle="Review W/E and maintenance expenses by building and unit."/>
+    <div className="tabs" role="tablist" aria-label="Building expense sections">
+      <button type="button" role="tab" aria-selected={tab==='expenses'} className={tab==='expenses'?'active':''} onClick={()=>{setTab('expenses');setPage(1)}}>W/E Expenses</button>
+      <button type="button" role="tab" aria-selected={tab==='maintenance'} className={tab==='maintenance'?'active':''} onClick={()=>{setTab('maintenance');setPage(1)}}>Maintenance</button>
     </div>
-    <section className="be-card">
-      <div className="be-info"><div>Organization: <strong>{val(selectedBuilding||{},'OrganizationName')||'—'}</strong></div><div>Building: <strong>{val(selectedBuilding||{},'BuildingName','Name')||'—'}</strong></div><div>Owner ID: <strong>{val(selectedBuilding||{},'OwnerCode')||'—'}</strong></div><div className="be-warning">{unit?'':'Please Select Unit!'}</div></div>
-      <div className="be-filterrow">
-        <div className="be-field"><label htmlFor="be-electricity">Electricity Number:</label><input id="be-electricity" value={electricity} readOnly /></div>
-        <div className="be-field"><label htmlFor="be-water">Water Number:</label><input id="be-water" value={water} readOnly /></div>
-        <div className="be-field"><label htmlFor="be-building">Building:</label><select id="be-building" value={buildingId} onChange={e=>{setBuildingId(e.target.value);setUnit('');setPage(1)}}><option value="">Please Select</option>{buildings.map(b=><option key={val(b,'BuildingID','id')} value={val(b,'BuildingID','id')}>{val(b,'BuildingName','Name','BlCode')}</option>)}</select></div>
+    <section className="panel">
+      <div className="panel-head"><div><h2>Expense records</h2><p>Utilities and maintenance costs for the selected property.</p></div></div>
+      <div className="form-grid three" style={{marginTop:18}}>
+        <label className="field-wrap"><span>Organization</span><input readOnly value={val(selectedBuilding||{},'OrganizationName')||'—'}/></label>
+        <label className="field-wrap"><span>Building</span><input readOnly value={val(selectedBuilding||{},'BuildingName','Name')||'—'}/></label>
+        <label className="field-wrap"><span>Owner ID</span><input readOnly value={val(selectedBuilding||{},'OwnerCode')||'—'}/></label>
       </div>
-      <div className="be-filterrow"><div className="be-field"><label htmlFor="be-unit">Unit:</label><select id="be-unit" value={unit} onChange={e=>{setUnit(e.target.value);setPage(1)}}><option value="">Please Select</option>{availableUnits.map(u=><option key={val(u,'UnitID','UnitCode')} value={val(u,'UnitID','UnitCode','UnitName')}>{val(u,'UnitCode','UnitName')}</option>)}</select></div><div></div><div></div></div>
-      <div className="be-toolbar"><label>Show <select value={pageSize} onChange={e=>{setPageSize(e.target.value);setPage(1)}}><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label><label>Search: <input value={search} onChange={e=>updateSearch(e.target.value)} placeholder="Search expenses" /></label></div>
-      {error&&<div className="be-error" role="alert">{error} <button type="button" onClick={()=>void load()}>Retry</button></div>}
-      <div className="be-tablewrap"><table className="be-table"><thead><tr><th>#</th><th>Year</th><th>Month</th><th>Date</th><th>Expense Type</th>{tab==='expenses'&&<><th>Electricity Reading</th><th>Water Reading</th></>}<th>Currency</th><th>Total Amount</th><th>Paying Amount</th><th>Balance</th></tr></thead><tbody>
-        {loading?<tr><td className="empty" colSpan={tab==='expenses'?11:9}>Loading expense records…</td></tr>:visible.length===0?<tr><td className="empty" colSpan={tab==='expenses'?11:9}>No data available in table</td></tr>:visible.map(row=><tr key={row.id}><td>{row.id}</td><td>{row.year||'—'}</td><td>{row.month||'—'}</td><td>{row.date||'—'}</td><td>{row.type||'—'}</td>{tab==='expenses'&&<><td>{val(records.find(r=>Number(val(r,'CostID','id'))===row.id)||{},'ElectricityReading')||'—'}</td><td>{val(records.find(r=>Number(val(r,'CostID','id'))===row.id)||{},'WaterReading')||'—'}</td></>}<td>{row.currency||'—'}</td><td>{row.totalAmount||'—'}</td><td>{row.payingAmount||'—'}</td><td>{row.balance||'—'}</td></tr>)}
-      </tbody></table></div>
-      <div className="be-footer"><span>Showing {filtered.length?`${(page-1)*Number(pageSize)+1} to ${Math.min(page*Number(pageSize),filtered.length)} of ${filtered.length}`:'0 to 0 of 0'} entries</span><div className="be-pages"><button type="button" disabled={page===1} onClick={()=>setPage(p=>Math.max(1,p-1))}>Previous</button><button type="button" className="current">{page}</button><button type="button" disabled={page*Number(pageSize)>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next</button></div></div>
+      <div className="form-grid four" style={{marginTop:16}}>
+        <label className="field-wrap"><span>Electricity Number</span><input readOnly value={electricity}/></label>
+        <label className="field-wrap"><span>Water Number</span><input readOnly value={water}/></label>
+        <label className="field-wrap"><span>Building</span><select value={buildingId} onChange={e=>{setBuildingId(e.target.value);setUnit('');setPage(1)}}><option value="">Please Select</option>{buildings.map(b=><option key={val(b,'BuildingID','id')} value={val(b,'BuildingID','id')}>{val(b,'BuildingName','Name','BlCode')}</option>)}</select></label>
+        <label className="field-wrap"><span>Unit</span><select value={unit} onChange={e=>{setUnit(e.target.value);setPage(1)}}><option value="">Please Select</option>{availableUnits.map(u=><option key={val(u,'UnitID','UnitCode')} value={val(u,'UnitID','UnitCode','UnitName')}>{val(u,'UnitCode','UnitName')}</option>)}</select></label>
+      </div>
+      {!unit&&<p role="alert" style={{margin:'6px 0 0',color:'#dc2626',fontSize:12,fontWeight:600}}>Please Select Unit!</p>}
+      <div className="toolbar" style={{paddingBottom:0,marginTop:16}}>
+        <label>Show <select value={pageSize} onChange={e=>{setPageSize(e.target.value);setPage(1)}}><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label>
+        <label className="search"><Search size={15}/><input value={search} onChange={e=>updateSearch(e.target.value)} placeholder="Search expenses"/></label>
+      </div>
+      <div style={{marginTop:14}}>
+        <TableWrap><TableHead>{headers.map(h=><Th key={h}>{h}</Th>)}</TableHead><tbody>
+          {loading?<tr><td className="empty-row" colSpan={colCount}>Loading expense records…</td></tr>:visible.length===0?<tr><td className="empty-row" colSpan={colCount}>No data available in table</td></tr>:visible.map(row=><tr key={row.id}><td>{row.id}</td><td>{row.year||'—'}</td><td>{row.month||'—'}</td><td>{row.date||'—'}</td><td>{row.type||'—'}</td>{tab==='expenses'&&<><td>{val(records.find(r=>Number(val(r,'CostID','id'))===row.id)||{},'ElectricityReading')||'—'}</td><td>{val(records.find(r=>Number(val(r,'CostID','id'))===row.id)||{},'WaterReading')||'—'}</td></>}<td>{row.currency||'—'}</td><td>{row.totalAmount||'—'}</td><td>{row.payingAmount||'—'}</td><td>{row.balance||'—'}</td></tr>)}
+        </tbody></TableWrap>
+      </div>
+      <div className="pagination" style={{paddingTop:15}}>
+        <span>Showing {filtered.length?`${(page-1)*Number(pageSize)+1} to ${Math.min(page*Number(pageSize),filtered.length)} of ${filtered.length}`:'0 to 0 of 0'} entries</span>
+        <div><button type="button" disabled={page===1} onClick={()=>setPage(p=>Math.max(1,p-1))}>Previous</button><button type="button" className="current">{page}</button><button type="button" disabled={page>=pageCount} onClick={()=>setPage(p=>Math.min(pageCount,p+1))}>Next</button></div>
+      </div>
     </section>
   </div>
 }
