@@ -1,4 +1,4 @@
-# CityOps Property Management — Full-Stack Development Package
+# CityApp Property Management — Full-Stack Development Package
 
 This folder contains the existing React + TypeScript UI and a Node.js + Express + MySQL backend scaffold.
 

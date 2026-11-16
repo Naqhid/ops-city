@@ -68,7 +68,7 @@ export default function Reports() {
 
   return <main className="reports-page">
     <style>{`
-      .reports-page{min-height:100%;box-sizing:border-box;padding:30px clamp(14px,2.2vw,34px) 38px;background:#f3f6fc;color:#172b4d;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+      .reports-page{min-height:100%;box-sizing:border-box;padding:14px clamp(14px,2.2vw,34px) 38px;background:#f3f6fc;color:#172b4d;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
       .rp-wrap{max-width:1600px;margin:0 auto}.rp-eyebrow{display:flex;align-items:center;gap:8px;color:#2864dc;font-size:10px;font-weight:850;letter-spacing:.18em;text-transform:uppercase}.rp-eyebrow:before{content:"";width:22px;height:2px;border-radius:4px;background:#3478f6}
       .rp-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:10px 0 25px}.rp-title{margin:0;font-size:clamp(28px,2.5vw,36px);line-height:1.12;letter-spacing:-.045em;font-weight:850;color:#142b50}.rp-subtitle{margin:9px 0 0;color:#7a8aa6;font-size:13px}.rp-head-actions{display:flex;gap:9px;flex-wrap:wrap}.rp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #dce6f5;border-radius:11px;padding:11px 15px;background:#fff;color:#456080;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap}.rp-btn.primary{border-color:transparent;background:linear-gradient(135deg,#3478f6,#215bd5);color:#fff;box-shadow:0 8px 18px #2d6ce52b}.rp-btn:hover{transform:translateY(-1px);filter:brightness(1.02)}
       .rp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:22px}.rp-stat{display:flex;align-items:center;gap:14px;padding:18px;background:#fff;border:1px solid #e4eaf4;border-radius:17px;box-shadow:0 7px 24px #1c3f7508}.rp-stat-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;flex-shrink:0}.rp-stat-icon.blue{background:#edf4ff;color:#2d6ce8}.rp-stat-icon.green{background:#eaf8f1;color:#16976b}.rp-stat-icon.purple{background:#f2edff;color:#7652d7}.rp-stat-icon.orange{background:#fff4e7;color:#d88628}.rp-stat-label{font-size:10px;color:#8190a8;font-weight:750;letter-spacing:.04em}.rp-stat-value{font-size:23px;line-height:1.25;margin-top:4px;font-weight:850;letter-spacing:-.04em;color:#1b3154}.rp-stat-note{font-size:10px;color:#97a4b7;margin-top:3px}
@@ -80,7 +80,7 @@ export default function Reports() {
       @media(max-width:1100px){.rp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rp-toolbar{align-items:flex-start;flex-direction:column}.rp-tools{width:100%;justify-content:flex-end}}@media(max-width:760px){.rp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rp-heading{align-items:flex-start;flex-direction:column}.rp-grid{padding:16px;gap:12px}.rp-toolbar,.rp-panel-head{padding:16px}.rp-tools{flex-direction:column;align-items:stretch}.rp-searchbox{width:100%}.rp-select{width:100%}}@media(max-width:520px){.rp-grid{grid-template-columns:1fr}.rp-stat{padding:13px;gap:10px}.rp-stat-icon{width:37px;height:37px}.rp-stat-value{font-size:20px}.rp-head-actions{width:100%}.rp-head-actions .rp-btn{flex:1}.rp-tabs{width:100%}.rp-tab{padding:8px 9px}.rp-bulk{padding:12px 16px;align-items:flex-start;flex-direction:column}}
     `}</style>
     <div className="rp-wrap">
-      <div className="rp-eyebrow">CityOps · Management</div>
+      <div className="rp-eyebrow">CityApp · Management</div>
       <header className="rp-heading"><div><h1 className="rp-title">Reports</h1><p className="rp-subtitle">Explore property, tenant, financial and operational insights in one place.</p></div><div className="rp-head-actions"><button className="rp-btn" onClick={() => { setQuery(""); setCategory("All reports"); setFormat("All formats"); setSelected([]); setNotice(""); }}>Reset filters</button><button className="rp-btn primary" onClick={() => setNotice("Choose a report below to export it. Connect your report API to generate complete report files.")}><Icon name="chart" size={16}/> Generate report</button></div></header>
       <section className="rp-stats">
         <div className="rp-stat"><div className="rp-stat-icon blue"><Icon name="list" size={21}/></div><div><div className="rp-stat-label">AVAILABLE REPORTS</div><div className="rp-stat-value">{reports.length}</div><div className="rp-stat-note">Across all categories</div></div></div>
@@ -95,7 +95,7 @@ export default function Reports() {
         {selected.length>0 && <div className="rp-bulk"><span>{selected.length} report{selected.length===1?"":"s"} selected</span><button className="rp-btn primary" onClick={()=>{const chosen=reports.filter(r=>selected.includes(r.id));chosen.forEach(downloadReport);setNotice(`Started demo exports for ${chosen.length} selected reports. Connect your report API for complete report data.`);}}>Export selected</button></div>}
         {notice && <p className="rp-notice" role="status">{notice}</p>}
       </section>
-      <footer className="rp-footer">© 2026 CityOps · Property Management Suite</footer>
+      <footer className="rp-footer">© 2026 Wiremelts Technologies · CityApp Property Management Suite</footer>
     </div>
   </main>;
 }

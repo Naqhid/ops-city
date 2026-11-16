@@ -1,4 +1,4 @@
-// API Client for CityOps Frontend
+// API Client for CityApp Frontend
 // Connects to backend API at /api/{resource}
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/$/, '');
@@ -24,7 +24,7 @@ const apiFetch = async <T>(
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      ...(localStorage.getItem('cityops_token') ? { Authorization: `Bearer ${localStorage.getItem('cityops_token')}` } : {}),
+      ...(localStorage.getItem('cityapp_token') ? { Authorization: `Bearer ${localStorage.getItem('cityapp_token')}` } : {}),
       ...options?.headers,
     },
     credentials: 'include', // For cookies/auth

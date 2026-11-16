@@ -1,4 +1,29 @@
-import {Router} from 'express';import {pool} from '../db.js';
-const router=Router();
-async function count(table){try{const [r]=await pool.query('SELECT COUNT(*) total FROM `'+table+'`');return Number(r[0].total)}catch{return 0}}
-router.get('/summary',async(req,res,next)=>{try{const [investors,buildings,tenants,relations,costs,rentals]=await Promise.all(['Invester','Building','Tenant','InvestorRelation','Costing','TenantRental'].map(count));let totalInvestment=0,totalRent=0,totalCost=0;try{const [r]=await pool.query('SELECT COALESCE(SUM(InvestmentAmount),0) total FROM InvestorRelation');totalInvestment=Number(r[0].total)}catch{}try{const [r]=await pool.query('SELECT COALESCE(SUM(RentalAmount),0) total FROM TenantRental');totalRent=Number(r[0].total)}catch{}try{const [r]=await pool.query('SELECT COALESCE(SUM(Amount),0) total FROM Costing');totalCost=Number(r[0].total)}catch{}res.json({data:{investors,buildings,tenants,investorRelations:relations,costEntries:costs,rentalEntries:rentals,totalInvestment,totalRent,totalCost}})}catch(e){next(e)}});export default router;
+import {Router} from 'express';
+import {pool} from '../db.js';
+import {isPlatformAdmin, requireOrganization} from '../middleware/auth.js';
+const router = Router();
+router.use(requireOrganization);
+
+// Counts/sums only rows of the caller's organization (platform admins see everything).
+async function agg(req, table, orgCol, expr) {
+  try {
+    const admin = isPlatformAdmin(req.user);
+    const [r] = await pool.query(`SELECT ${expr} total FROM \`${table}\`${admin ? '' : ` WHERE \`${orgCol}\` = ?`}`, admin ? [] : [req.user.organizationId]);
+    return Number(r[0].total);
+  } catch { return 0; }
+}
+router.get('/summary', async (req, res, next) => { try {
+  const [investors, buildings, tenants, investorRelations, costEntries, rentalEntries, totalInvestment, totalRent, totalCost] = await Promise.all([
+    agg(req, 'Invester', 'OrganizationID', 'COUNT(*)'),
+    agg(req, 'Building', 'Organization_OrganizationID', 'COUNT(*)'),
+    agg(req, 'Tenant', 'OrganizationID', 'COUNT(*)'),
+    agg(req, 'InvestorRelation', 'OrganizationID', 'COUNT(*)'),
+    agg(req, 'Costing', 'OrganizationID', 'COUNT(*)'),
+    agg(req, 'TenantRental', 'OrganizationID', 'COUNT(*)'),
+    agg(req, 'InvestorRelation', 'OrganizationID', 'COALESCE(SUM(InvestmentAmount),0)'),
+    agg(req, 'TenantRental', 'OrganizationID', 'COALESCE(SUM(RentalAmount),0)'),
+    agg(req, 'Costing', 'OrganizationID', 'COALESCE(SUM(Amount),0)')
+  ]);
+  res.json({data: {investors, buildings, tenants, investorRelations, costEntries, rentalEntries, totalInvestment, totalRent, totalCost}});
+} catch (e) { next(e); } });
+export default router;

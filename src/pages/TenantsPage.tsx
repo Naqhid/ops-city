@@ -162,7 +162,7 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
   return <div className="min-h-screen bg-slate-100 text-slate-800">
     {apiError && <div role="alert" className="m-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">Backend: {apiError}</div>}
     <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-slate-200 bg-white px-5 shadow-sm">
-      <div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-lg font-black text-white">CO</div><div><div className="text-sm font-bold tracking-wide text-slate-800">CITYOPS</div><div className="text-[11px] text-slate-400">Property Management</div></div></div>
+      <div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-lg font-black text-white">CA</div><div><div className="text-sm font-bold tracking-wide text-slate-800">CITYAPP</div><div className="text-[11px] text-slate-400">Property Management</div></div></div>
       <div className="hidden text-sm text-slate-500 md:block">Tenant Management <span className="mx-2 text-slate-300">/</span> <span className="font-semibold text-slate-700">Tenants and Rentals</span></div>
       <button onClick={() => { setSelectedBuilding(null); setSelectedTenant(null); }} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">MN <span className="hidden sm:inline"> Admin</span></button>
     </header>
@@ -191,7 +191,7 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
         {tab === "Tenant" && <div className="space-y-5">
           <Section title="Building">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {showForm("organization", "Organization", true, ["Axiom", "CityOps"])}
+              {showForm("organization", "Organization", true, ["Axiom", "CityApp"])}
               {showForm("building", "Building", true, buildings.map(b => b.name))}
               {showForm("buildingNumber", "Building Number", false, undefined, true)}
               {showForm("zone", "Zone", false, undefined, true)}
@@ -301,7 +301,7 @@ export default function TenantsAndRentalsPage(_props: { query?: string; setQuery
       </>}
     </div>
 
-    <footer className="mt-8 border-t border-slate-200 bg-white px-5 py-5 text-center text-xs text-slate-400">Copyright © 2026 — CityApp UI demo. All rights reserved.</footer>
+    <footer className="mt-8 border-t border-slate-200 bg-white px-5 py-5 text-center text-xs text-slate-400">© 2026 Wiremelts Technologies · CityApp. All rights reserved.</footer>
 
     {toast && <div className="fixed bottom-5 right-5 z-50 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-xl">{toast}</div>}
 

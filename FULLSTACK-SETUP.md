@@ -1,4 +1,4 @@
-# CityOps full-stack setup (React + Node/Express + MySQL)
+# CityApp full-stack setup (React + Node/Express + MySQL)
 
 ## Included
 - Existing React + TypeScript frontend (kept intact).
@@ -26,7 +26,7 @@ Check `http://localhost:4000/api/health`.
 ## 3. Create first admin
 ```bash
 cd backend
-npm run create-admin -- admin@example.com admin 'Use-A-Strong-Password-Here' 'CityOps Admin'
+npm run create-admin -- admin@example.com admin 'Use-A-Strong-Password-Here' 'CityApp Admin'
 ```
 Login: `POST /api/auth/login` JSON `{ "email": "admin@example.com", "password": "..." }`. The response contains a bearer token. `GET /api/auth/me` validates it. The generic CRUD routes are currently public to make local UI integration easy; protect them with `requireAuth` before deployment. Do not expose this API publicly until authorization and field-level validation are completed.
 

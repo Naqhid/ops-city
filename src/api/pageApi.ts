@@ -1,11 +1,11 @@
 /**
- * Shared API adapters for CityOps pages. All calls go to the configured backend
+ * Shared API adapters for CityApp pages. All calls go to the configured backend
  * and never silently fall back to demo data. Resource names must match backend/src/resources.js.
  */
 import { api } from './client';
 
 export type ApiRecord = Record<string, unknown> & { [key: string]: unknown };
-export const cityOpsResources = {
+export const cityAppResources = {
   investors: 'investors', buildings: 'buildings', owners: 'owners',
   organizations: 'organizations', floors: 'floors', units: 'units',
   tenants: 'tenants', rentals: 'rentals', investorRelations: 'investor-relations',

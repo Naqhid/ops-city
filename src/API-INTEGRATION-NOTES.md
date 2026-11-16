@@ -1,7 +1,7 @@
-# CityOps frontend API integration notes
+# CityApp frontend API integration notes
 
 ## Configuration
-Set `VITE_API_URL=http://localhost:4000/api` in `.env.local` (or your deployed API base). The shared clients attach the `cityops_token` bearer token.
+Set `VITE_API_URL=http://localhost:4000/api` in `.env.local` (or your deployed API base). The shared clients attach the `cityapp_token` bearer token.
 
 ## Backend resources available in the supplied backend
 `investors`, `buildings`, `owners`, `organizations`, `floors`, `units`, `tenants`, `rentals`, `investor-relations`, `building-portfolios`, `costs`, `unit-pricing`, `sources`, `banks`, and `investments`. Dashboard summary is `GET /api/dashboard/summary`; authentication is `POST /api/auth/login` and `GET /api/auth/me`.

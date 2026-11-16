@@ -1,4 +1,4 @@
-# CityOps full-stack package status
+# CityApp full-stack package status
 
 This package combines the current React + TypeScript frontend and Node.js + Express + MySQL backend scaffold.
 

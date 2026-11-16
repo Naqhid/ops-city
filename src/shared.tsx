@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { Search, ChevronUp, ChevronDown, ChevronsUpDown, Loader2 } from 'lucide-react'
 
-export function PageHeader({ title, subtitle, action }: { title:string; subtitle?:string; action?:React.ReactNode }) { return <div className="page-header"><div><div className="eyebrow">CITYOPS · MANAGEMENT</div><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{action}</div> }
+export function PageHeader({ title, subtitle, action }: { title:string; subtitle?:string; action?:React.ReactNode }) { return <div className="page-header"><div><div className="eyebrow">CITYAPP · MANAGEMENT</div><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{action}</div> }
 export function Toolbar({ query, setQuery, count=25 }: { query:string; setQuery:(v:string)=>void; count?:number }) { return <div className="toolbar"><label>Show <select defaultValue={String(count)}><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label><div className="search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search records..."/></div></div> }
 export function TableWrap({children}:{children:React.ReactNode}){return <div className="table-scroll"><table>{children}</table></div>}
 export function TableHead({children}:{children:React.ReactNode}){return <thead><tr>{children}</tr></thead>}

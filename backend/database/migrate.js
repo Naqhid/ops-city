@@ -1,5 +1,5 @@
 /**
- * Safe migration runner for CityOps.
+ * Safe migration runner for CityApp.
  * It only executes explicitly supplied, numbered .sql files from migrations/.
  * No migration is executed automatically at server startup.
  * Review and back up the database before running this command.

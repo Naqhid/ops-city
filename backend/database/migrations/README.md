@@ -1,4 +1,4 @@
-# CityOps database migrations
+# CityApp database migrations
 
 Your existing MySQL database created from `Avion.sql` is the source of truth. Do not re-import or replace it.
 

@@ -1,6 +1,6 @@
-# CityOps — Part 2: Backend + Database
+# CityApp — Part 2: Backend + Database
 
-This archive is intended to be used alongside **CityOps-Part-1-Frontend.zip**.
+This archive is intended to be used alongside **CityApp-Part-1-Frontend.zip**.
 
 ## Contents
 - `backend/` — Node.js + Express API scaffold, route files, MySQL connection setup, authentication routes/middleware, dashboard route, `.env.example`, and admin setup script.

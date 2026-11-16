@@ -1,4 +1,4 @@
-# CityOps frontend API integration status
+# CityApp frontend API integration status
 
 This package preserves the existing UI and adds a typed, reusable HTTP client at `src/lib/api.ts`. Configure `VITE_API_URL` in `.env.local`.
 
