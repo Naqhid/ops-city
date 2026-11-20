@@ -3,6 +3,8 @@
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/$/, '');
 
+import { notifyIfUnauthorized } from '../lib/api';
+
 // Helper to build query string from params object
 const buildQueryString = (params: Record<string, any>): string => {
   const searchParams = new URLSearchParams();
@@ -29,6 +31,8 @@ const apiFetch = async <T>(
     },
     credentials: 'include', // For cookies/auth
   });
+
+  notifyIfUnauthorized(response.status, endpoint);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

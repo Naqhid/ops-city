@@ -1,14 +1,21 @@
 ﻿/** CityApp API client. Configure VITE_API_URL in .env.local. */
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/$/, "");
 export const authHeaders = (): Record<string,string> => { const tk = localStorage.getItem("cityapp_token"); return tk ? { Authorization: `Bearer ${tk}` } : {}; };
+/** A 401 on any request except login means the session is invalid or expired: tell the app to sign out. */
+export const UNAUTHORIZED_EVENT = "cityapp:unauthorized";
+export function notifyIfUnauthorized(status: number, path: string) {
+  if (status === 401 && !path.includes("/auth/login") && localStorage.getItem("cityapp_token")) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+}
 export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, { method: "POST", headers: { Accept: "application/json", ...authHeaders() }, body: form });
   const body = await response.json().catch(() => ({}));
+  notifyIfUnauthorized(response.status, path);
   if (!response.ok) throw new ApiError(body.error || `Upload failed (${response.status})`, response.status);
   return body as T;
 }
 export async function apiBlob(path: string): Promise<Blob> {
   const response = await fetch(`${API_BASE}${path}`, { headers: authHeaders() });
+  notifyIfUnauthorized(response.status, path);
   if (!response.ok) throw new ApiError(`Could not load file (${response.status})`, response.status);
   return response.blob();
 }
@@ -18,6 +25,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
     ...init, headers: { Accept: "application/json", ...(init.body ? { "Content-Type": "application/json" } : {}), ...(localStorage.getItem("cityapp_token") ? { Authorization: `Bearer ${localStorage.getItem("cityapp_token")}` } : {}), ...init.headers },
   });
   const body = await response.json().catch(() => ({}));
+  notifyIfUnauthorized(response.status, path);
   if (!response.ok) throw new ApiError(body.error || body.message || `Request failed (${response.status})`, response.status, body);
   return body as T;
 }

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Search, X, Bell, Building2, ChevronDown, ChevronRight, LayoutDashboard, Menu, Settings, Users, ReceiptText, WalletCards, BarChart3, Zap, LogOut, LockKeyhole } from 'lucide-react'
 import './styles.css'
 import { Page, NavGroup, Investor } from './types'
-import { apiRequest, listResource } from './lib/api'
+import { apiRequest, listResource, UNAUTHORIZED_EVENT } from './lib/api'
 import { Dashboard } from './pages/Dashboard'
 import { InvestorsPage } from './pages/InvestorsPage'
 import { InvestorForm } from './pages/InvestorForm'
@@ -24,7 +24,7 @@ import { OwnersPage } from './pages/OwnersPage'
 import { InvestmentsPage } from './pages/InvestmentsPage'
 import { OrganizationsPage, RolesPage, UsersPage, AuthUser } from './pages/MasterSetupPages'
 
-const BASE='/cityapp'
+const BASE='/ops-city'
 const routeMap:Record<Page,string>={dashboard:'/',investors:'/investors','investor-form':'/investors/new',agreements:'/agreements','agreement-editor':'/agreements/editor',buildings:'/buildings','building-form':'/buildings/new','investor-relation':'/investor-relation',tenants:'/tenants','building-rents':'/building-rents','building-expenses':'/building-expenses',sources:'/sources',banks:'/banks',financial:'/financial',available:'/reports/available-buildings','building-cost':'/reports/building-cost',owners:'/reports/owners',investments:'/reports/investments','master-organizations':'/master/organizations','master-roles':'/master/roles','master-users':'/master/users'}
 function pathToPage(path:string):Page{const clean=(path.replace(/\/$/,'')||'/');const entry=Object.entries(routeMap).find(([,v])=>v===clean);return (entry?.[0] as Page)||'dashboard'}
 function currentPage(){const pathname=window.location.pathname;const relative=pathname.startsWith(BASE)?pathname.slice(BASE.length)||'/':pathname; if(relative==='/investors/new'||relative.startsWith('/investors/edit/')) return 'investor-form'; return pathToPage(relative)}
@@ -52,6 +52,7 @@ function AppGate(){
  const [user,setUser]=useState<AuthUser|null>(()=>{try{return JSON.parse(localStorage.getItem(USER_KEY)||'null')}catch{return null}})
  const login=(nextToken:string,nextUser:AuthUser)=>{localStorage.setItem(TOKEN_KEY,nextToken);localStorage.setItem(USER_KEY,JSON.stringify(nextUser));setToken(nextToken);setUser(nextUser)}
  const logout=()=>{localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(USER_KEY);setToken('');setUser(null);window.history.replaceState({},'',`${BASE}/login`)}
+ useEffect(()=>{window.addEventListener(UNAUTHORIZED_EVENT,logout);return()=>window.removeEventListener(UNAUTHORIZED_EVENT,logout)},[])
  if(!token)return <LoginPage onLogin={login}/>
  return <App currentUser={user} onLogout={logout}/>
 }
